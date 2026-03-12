@@ -1,10 +1,12 @@
 import { useAuthStore } from '../store/authStore';
 import { getDefaultAvatar, getStreakLabel, getStreakBadgeClass } from '../lib/utils';
+import ThemePicker from '../components/settings/ThemePicker';
 
 export default function ProfilePage() {
   const user = useAuthStore((s) => s.user);
   const avatar = user?.avatarUrl || getDefaultAvatar(user?.username || 'user');
   const streak = user?.currentStreak || 0;
+  <ThemePicker />
 
   return (
     <div className="max-w-2xl mx-auto">
