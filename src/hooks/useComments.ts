@@ -13,7 +13,7 @@ export function useAddComment(postId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (content: string) =>
-      postsApi.addComment(postId, content),
+        postsApi.addComment(postId, { content }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', postId] });
       // bump comment count in all feed caches
