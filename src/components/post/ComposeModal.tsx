@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postsApi } from '../../api/posts';
 import { useUIStore } from '../../store/uiStore';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '../../store/authStore';
 
 const POST_TYPES = [
   { value: 'daily_win', label: '🏆 Daily Win' },
@@ -19,14 +20,20 @@ export default function ComposeModal() {
   const setPostType = useUIStore((s) => s.setPostType);
   const [content, setContent] = useState('');
   const queryClient = useQueryClient();
+  const setUser = useAuthStore((s) => s.setUser);
+  const user = useAuthStore((s) => s.user);
 
   const { mutate: createPost, isPending } = useMutation({
     mutationFn: () => postsApi.create({ content, postType }),
-    onSuccess: () => {
+    onSuccess: (post) => {
+      // Sync the new streak back into the auth store
+    if (user && post.author?.currentStreak !== undefined) {
+        setUser({ ...user, currentStreak: post.author.currentStreak });
+      }
       queryClient.invalidateQueries({ queryKey: ['feed'] });
       setContent('');
       close();
-      toast.success('Posted! 🔥 Keep that streak going!');
+      toast.success(`Day ${post.author.currentStreak} 🔥 Keep that streak going!`);
     },
     onError: () => toast.error('Failed to post. Try again.'),
   });
