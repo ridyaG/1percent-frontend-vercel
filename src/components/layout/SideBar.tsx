@@ -38,13 +38,10 @@ export default function Sidebar() {
       )}
 
       <aside
-        style={{
-          transform: typeof window !== 'undefined' && window.innerWidth < 768 && !sidebarOpen
-            ? 'translateX(-100%)'
-            : 'translateX(0)',
-        }}
-        className="fixed top-0 left-0 w-[220px] h-screen bg-[#111] border-r border-white/5 flex flex-col p-6 z-50 transition-transform duration-300 max-md:-translate-x-full md:translate-x-0"
-      >
+          className={`fixed top-0 left-0 w-[220px] h-screen bg-[#111] border-r border-white/5 
+                      flex flex-col p-6 z-50 transition-transform duration-300
+                      md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        >
         <div className="mb-10 pl-2">
           <span className="text-5xl font-bold text-[#FF5C00]" style={{ textShadow: '0 0 30px rgba(255,92,0,0.25)' }}>
             1%
