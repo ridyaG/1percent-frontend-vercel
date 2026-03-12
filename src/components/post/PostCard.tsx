@@ -33,6 +33,7 @@ export default function PostCard({ post }: { post: Post }) {
   );
 
   return (
+    <>
     <div className="bg-[#111] border border-white/5 rounded-2xl p-5 mb-3
                     hover:border-white/10 transition-colors">
       <div className="flex items-center gap-3 mb-3">
@@ -81,8 +82,10 @@ export default function PostCard({ post }: { post: Post }) {
           <Bookmark size={18} />
         </button>
       </div>
-
-      {showComments && <CommentSection postId={post.id} />}
     </div>
+    {showComments && (
+      <CommentSection postId={post.id} onClose={() => setShowComments(false)} />
+    )}
+    </>
   );
 }
