@@ -84,7 +84,7 @@ export default function PostCard({ post }: { post: Post }) {
       </div>
     </div>
     {showComments && (
-      <CommentSection postId={post.id} onClose={() => setShowComments(false)} />
+      <CommentSection postId={post.id} post={post} onClose={() => setShowComments(false)} />
     )}
     </>
   );
