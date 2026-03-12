@@ -3,6 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useLike } from '../../hooks/useLike';
 import StreakBadge from '../profile/StreakBadge';
 import type { Post } from '../../types/post';
+import { getDefaultAvatar } from '../../lib/utils';
 
 const POST_TYPES: Record<string, { label: string; icon: string }> = {
   daily_win:  { label: 'Daily Win', icon: '🏆' },
@@ -34,7 +35,14 @@ export default function PostCard({ post }: { post: Post }) {
                     hover:border-white/10 transition-colors">
       {/* Header */}
       <div className="flex items-center gap-3 mb-3">
-        <img src={author.avatarUrl} className="w-10 h-10 rounded-full" />
+        <img
+            src={author.avatarUrl || getDefaultAvatar(author.username)}
+            className="w-10 h-10 rounded-full bg-white/5"
+            alt={author.displayName}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = getDefaultAvatar(author.username);
+            }}
+         />
         <div className="flex-1">
           <div className="font-semibold text-sm">
             {author.displayName}
