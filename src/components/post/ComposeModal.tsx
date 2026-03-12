@@ -26,8 +26,7 @@ export default function ComposeModal() {
   const { mutate: createPost, isPending } = useMutation({
     mutationFn: () => postsApi.create({ content, postType }),
     onSuccess: (post) => {
-      // Sync the new streak back into the auth store
-    if (user && post.author?.currentStreak !== undefined) {
+      if (user && post.author?.currentStreak !== undefined) {
         setUser({ ...user, currentStreak: post.author.currentStreak });
       }
       queryClient.invalidateQueries({ queryKey: ['feed'] });
@@ -44,13 +43,26 @@ export default function ComposeModal() {
 
   return (
     <div
-      className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 flex items-center justify-center z-50 p-4"
+      style={{ background: 'rgba(0,0,0,0.75)' }}
       onClick={(e) => e.target === e.currentTarget && close()}
     >
-      <div className="bg-[#111] border border-white/10 rounded-2xl w-full max-w-lg animate-in fade-in zoom-in-95 duration-200">
+      <div
+        className="w-full max-w-lg rounded-2xl animate-in fade-in zoom-in-95 duration-200"
+        style={{
+          background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)',
+        }}
+      >
         <div className="flex justify-between items-center p-5 pb-0">
-          <h2 className="text-lg font-bold tracking-wide">Share your win today</h2>
-          <button onClick={close} className="text-gray-500 hover:text-white transition-colors">
+          <h2 className="text-lg font-bold tracking-wide" style={{ color: 'var(--color-text)' }}>
+            Share your win today
+          </h2>
+          <button
+            onClick={close}
+            className="transition-colors"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
             <X size={20} />
           </button>
         </div>
@@ -60,11 +72,12 @@ export default function ComposeModal() {
             <button
               key={t.value}
               onClick={() => setPostType(t.value)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
-                postType === t.value
-                  ? 'border-[#FF5C00] text-[#FF5C00] bg-[#FF5C00]/10'
-                  : 'border-white/10 text-gray-400 hover:text-white'
-              }`}
+              className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
+              style={{
+                border: `1px solid ${postType === t.value ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                color: postType === t.value ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                background: postType === t.value ? 'var(--color-accent-bg)' : 'transparent',
+              }}
             >
               {t.label}
             </button>
@@ -75,18 +88,29 @@ export default function ComposeModal() {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="What did you improve today? #fitness #coding #reading..."
-          className="w-full bg-transparent p-5 text-white outline-none resize-none min-h-[120px] placeholder-gray-500"
+          className="w-full p-5 outline-none resize-none min-h-[120px] bg-transparent"
+          style={{
+            color: 'var(--color-text)',
+            caretColor: 'var(--color-accent)',
+          }}
           maxLength={500}
         />
 
-        <div className="flex justify-between items-center p-5 pt-3 border-t border-white/5">
-          <span className={`text-sm font-medium ${remaining < 50 ? 'text-red-500' : remaining < 150 ? 'text-yellow-500' : 'text-gray-500'}`}>
+        <div
+          className="flex justify-between items-center p-5 pt-3"
+          style={{ borderTop: '1px solid var(--color-border)' }}
+        >
+          <span
+            className="text-sm font-medium"
+            style={{ color: remaining < 50 ? '#ef4444' : remaining < 150 ? '#eab308' : 'var(--color-text-muted)' }}
+          >
             {remaining}
           </span>
           <button
             onClick={() => createPost()}
             disabled={!content.trim() || isPending}
-            className="px-5 py-2 bg-[#FF5C00] text-white font-semibold rounded-lg hover:bg-[#ff7020] disabled:opacity-50 transition-colors"
+            className="px-5 py-2 font-semibold rounded-lg transition-colors disabled:opacity-50"
+            style={{ background: 'var(--color-accent)', color: 'var(--color-accent-text)' }}
           >
             {isPending ? 'Posting...' : 'Post It'}
           </button>
