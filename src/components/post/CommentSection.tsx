@@ -42,53 +42,46 @@ export default function CommentSection({ postId, post, onClose }: Props) {
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/75 backdrop-blur-md z-40"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 backdrop-blur-md z-40" style={{ background: 'rgba(0,0,0,0.75)' }} onClick={onClose} />
 
-      {/* Centered Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-[#161616] rounded-3xl shadow-2xl
-                        flex flex-col max-h-[80vh] overflow-hidden
-                        border border-white/8">
-
+        <div
+          className="w-full max-w-md rounded-3xl shadow-2xl flex flex-col max-h-[80vh] overflow-hidden"
+          style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+        >
           {/* Header */}
           <div className="flex items-center justify-between px-6 pt-5 pb-4 shrink-0">
             <div>
-              <h3 className="font-bold text-lg">Comments</h3>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <h3 className="font-bold text-lg" style={{ color: 'var(--color-text)' }}>Comments</h3>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
                 {(comments as Comment[]).length} comment{(comments as Comment[]).length !== 1 ? 's' : ''}
               </p>
             </div>
             <button
               onClick={onClose}
-              className="w-9 h-9 flex items-center justify-center rounded-full
-                         bg-white/5 hover:bg-white/10 transition-colors"
+              className="w-9 h-9 flex items-center justify-center rounded-full transition-colors"
+              style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-muted)' }}
             >
               <X size={16} />
             </button>
           </div>
 
           {/* Post preview */}
-          <div className="mx-6 mb-4 p-4 bg-white/4 rounded-2xl border border-white/5 shrink-0">
+          <div
+            className="mx-6 mb-4 p-4 rounded-2xl shrink-0"
+            style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}
+          >
             <div className="flex items-center gap-2.5 mb-2">
-              <img
-                src={post.author.avatarUrl || getDefaultAvatar(post.author.username)}
-                className="w-8 h-8 rounded-full"
-                alt=""
-              />
+              <img src={post.author.avatarUrl || getDefaultAvatar(post.author.username)} className="w-8 h-8 rounded-full" alt="" />
               <div>
-                <div className="text-sm font-semibold leading-none">{post.author.displayName}</div>
-                <div className="text-xs text-gray-500 mt-0.5">@{post.author.username}</div>
+                <div className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{post.author.displayName}</div>
+                <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>@{post.author.username}</div>
               </div>
             </div>
-            <p className="text-sm text-gray-300 leading-relaxed line-clamp-2">{post.content}</p>
+            <p className="text-sm leading-relaxed line-clamp-2" style={{ color: 'var(--color-text-muted)' }}>{post.content}</p>
           </div>
 
-          {/* Divider */}
-          <div className="h-px bg-white/5 mx-6 shrink-0" />
+          <div className="h-px mx-6 shrink-0" style={{ background: 'var(--color-border)' }} />
 
           {/* Comments list */}
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
@@ -96,56 +89,46 @@ export default function CommentSection({ postId, post, onClose }: Props) {
               <div className="space-y-4">
                 {[...Array(3)].map((_, i) => (
                   <div key={i} className="flex gap-3 animate-pulse">
-                    <div className="w-9 h-9 bg-white/5 rounded-full shrink-0" />
+                    <div className="w-9 h-9 rounded-full shrink-0" style={{ background: 'var(--color-border)' }} />
                     <div className="flex-1 space-y-2 pt-1">
-                      <div className="h-2.5 bg-white/5 rounded w-28" />
-                      <div className="h-8 bg-white/5 rounded-xl" />
+                      <div className="h-2.5 rounded w-28" style={{ background: 'var(--color-border)' }} />
+                      <div className="h-8 rounded-xl" style={{ background: 'var(--color-border)' }} />
                     </div>
                   </div>
                 ))}
               </div>
             ) : (comments as Comment[]).length === 0 ? (
-              <div className="text-center py-10 text-gray-500">
+              <div className="text-center py-10" style={{ color: 'var(--color-text-muted)' }}>
                 <div className="text-4xl mb-3">💬</div>
                 <div className="text-sm font-medium">No comments yet</div>
-                <div className="text-xs text-gray-600 mt-1">Start the conversation!</div>
+                <div className="text-xs mt-1" style={{ color: 'var(--color-text-muted)', opacity: 0.6 }}>Start the conversation!</div>
               </div>
             ) : (
               (comments as Comment[]).map(c => (
                 <div key={c.id} className="flex gap-3">
-                  <img
-                    src={c.author.avatarUrl || getDefaultAvatar(c.author.username)}
-                    className="w-9 h-9 rounded-full shrink-0 mt-0.5"
-                    alt=""
-                  />
+                  <img src={c.author.avatarUrl || getDefaultAvatar(c.author.username)} className="w-9 h-9 rounded-full shrink-0 mt-0.5" alt="" />
                   <div className="flex-1">
                     <div className="flex items-baseline gap-1.5 mb-1">
-                      <span className="text-sm font-semibold">{c.author.displayName}</span>
-                      <span className="text-xs text-gray-500">@{c.author.username}</span>
-                      <span className="text-xs text-gray-600 ml-auto">
+                      <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{c.author.displayName}</span>
+                      <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>@{c.author.username}</span>
+                      <span className="text-xs ml-auto" style={{ color: 'var(--color-text-muted)', opacity: 0.6 }}>
                         {formatDistanceToNow(new Date(c.createdAt), { addSuffix: true })}
                       </span>
                     </div>
-                    <p className="text-sm leading-relaxed text-gray-200">{c.content}</p>
-
-                    {/* Replies */}
+                    <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text)' }}>{c.content}</p>
                     {c.replies && c.replies.length > 0 && (
-                      <div className="mt-3 pl-3 border-l-2 border-[#FF5C00]/30 space-y-3">
+                      <div className="mt-3 pl-3 space-y-3" style={{ borderLeft: '2px solid var(--color-accent-bg)' }}>
                         {c.replies.map(r => (
                           <div key={r.id} className="flex gap-2">
-                            <img
-                              src={r.author.avatarUrl || getDefaultAvatar(r.author.username)}
-                              className="w-7 h-7 rounded-full shrink-0"
-                              alt=""
-                            />
+                            <img src={r.author.avatarUrl || getDefaultAvatar(r.author.username)} className="w-7 h-7 rounded-full shrink-0" alt="" />
                             <div>
                               <div className="flex items-baseline gap-1.5 mb-0.5">
-                                <span className="text-xs font-semibold">{r.author.displayName}</span>
-                                <span className="text-xs text-gray-600">
+                                <span className="text-xs font-semibold" style={{ color: 'var(--color-text)' }}>{r.author.displayName}</span>
+                                <span className="text-xs" style={{ color: 'var(--color-text-muted)', opacity: 0.6 }}>
                                   {formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}
                                 </span>
                               </div>
-                              <p className="text-sm text-gray-300">{r.content}</p>
+                              <p className="text-sm" style={{ color: 'var(--color-text)' }}>{r.content}</p>
                             </div>
                           </div>
                         ))}
@@ -158,28 +141,30 @@ export default function CommentSection({ postId, post, onClose }: Props) {
           </div>
 
           {/* Input */}
-          <div className="px-6 py-4 border-t border-white/5 shrink-0">
-            <div className="flex items-center gap-3 bg-white/5 rounded-2xl px-4 py-2.5
-                            focus-within:ring-1 focus-within:ring-[#FF5C00]/40 transition-all">
+          <div className="px-6 py-4 shrink-0" style={{ borderTop: '1px solid var(--color-border)' }}>
+            <div
+              className="flex items-center gap-3 rounded-2xl px-4 py-2.5 transition-all"
+              style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}
+            >
               <input
                 value={text}
                 onChange={e => setText(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSubmit()}
                 placeholder="Write a comment..."
                 autoFocus
-                className="flex-1 bg-transparent text-sm outline-none placeholder-gray-600"
+                className="flex-1 bg-transparent text-sm outline-none"
+                style={{ color: 'var(--color-text)', caretColor: 'var(--color-accent)' }}
               />
               <button
                 onClick={handleSubmit}
                 disabled={!text.trim() || isPending}
-                className="w-8 h-8 flex items-center justify-center bg-[#FF5C00] rounded-xl
-                           disabled:opacity-30 hover:bg-[#FF5C00]/80 transition-colors shrink-0"
+                className="w-8 h-8 flex items-center justify-center rounded-xl transition-colors disabled:opacity-30"
+                style={{ background: 'var(--color-accent)', color: 'var(--color-accent-text)' }}
               >
-                <Send size={14} className="text-white" />
+                <Send size={14} />
               </button>
             </div>
           </div>
-
         </div>
       </div>
     </>
