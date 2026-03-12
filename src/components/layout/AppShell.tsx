@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
 import { useSocket } from '../../hooks/useSocket';
 import { Toaster } from 'react-hot-toast';
+import ThemeFloating from '../settings/ThemeFloating';
 
 export default function AppShell() {
   const openCompose = useUIStore((s) => s.openCompose);
@@ -36,6 +37,7 @@ export default function AppShell() {
           style: { background: '#1a1a1a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' },
         }}
       />
+      <ThemeFloating />
     </div>
   );
 }
