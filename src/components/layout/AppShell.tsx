@@ -10,10 +10,13 @@ import ThemeFloating from '../settings/ThemeFloating';
 
 export default function AppShell() {
   const openCompose = useUIStore((s) => s.openCompose);
-  useSocket(); // Connect WebSocket
+  useSocket();
 
   return (
-    <div className="flex min-h-screen bg-[#0a0a0a] text-white">
+    <div
+      className="flex min-h-screen"
+      style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}
+    >
       <Sidebar />
       <main className="flex-1 md:ml-[220px]">
         <Topbar />
@@ -25,7 +28,8 @@ export default function AppShell() {
       {/* FAB */}
       <button
         onClick={openCompose}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-[#FF5C00] text-white flex items-center justify-center shadow-lg shadow-[#FF5C00]/25 hover:scale-110 transition-transform z-40"
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform z-40"
+        style={{ background: 'var(--color-accent)', color: 'var(--color-accent-text)' }}
       >
         <Plus size={24} />
       </button>
@@ -34,7 +38,11 @@ export default function AppShell() {
       <Toaster
         position="bottom-right"
         toastOptions={{
-          style: { background: '#1a1a1a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' },
+          style: {
+            background: 'var(--color-surface)',
+            color: 'var(--color-text)',
+            border: '1px solid var(--color-border)',
+          },
         }}
       />
       <ThemeFloating />
