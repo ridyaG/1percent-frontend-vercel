@@ -45,9 +45,9 @@ export default function LoginPage() {
       <div className="w-full max-w-[960px] relative animate-fade-in">
         <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="hidden lg:block pr-6">
-            <div className="eyebrow mb-4">
-              <Flame size={14} />
-              Build consistency
+            <div className="eyebrow mb-4" style={{ color: 'var(--color-accent)', borderColor: 'rgba(255,122,24,0.55)', background: 'rgba(255,122,24,0.12)', fontWeight: 700 }}>
+                <Flame size={14} />
+                  Build consistency
             </div>
             <h1 className="type-hero mb-4">Show up daily and make progress feel tangible.</h1>
             <p className="section-copy text-base">
@@ -55,9 +55,18 @@ export default function LoginPage() {
             </p>
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
               {['Track streaks clearly', 'Post wins in seconds', 'Explore trending growth', 'Stay motivated daily'].map((item) => (
-                <div key={item} className="glass-panel px-4 py-4 text-sm font-medium" style={{ color: 'var(--color-text)' }}>
-                  {item}
-                </div>
+                <div
+                    key={item}
+                    className="glass-panel px-4 py-4 text-sm font-semibold"
+                    style={{
+                      color: 'var(--color-accent)',
+                      border: '1px solid rgba(255,122,24,0.55)',
+                      background: 'rgba(255,122,24,0.1)',
+                      boxShadow: '0 0 14px rgba(255,122,24,0.18)',
+                    }}
+                  >
+                    {item}
+                  </div>
               ))}
             </div>
           </div>
