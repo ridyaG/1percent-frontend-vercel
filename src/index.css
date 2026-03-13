@@ -172,12 +172,22 @@ input[type="date"] {
   0%, 100% { transform: translate3d(0, 0, 0); }
   50% { transform: translate3d(-28px, 18px, 0); }
 }
+@keyframes rotate-slower {
+  from { transform: translateX(-50%) rotate(0deg); }
+  to { transform: translateX(-50%) rotate(360deg); }
+}
+@keyframes pulse-core {
+  0%, 100% { opacity: 0.42; transform: translateX(-50%) scale(0.95); }
+  50% { opacity: 0.68; transform: translateX(-50%) scale(1.06); }
+}
 
 .animate-fade-in { animation: fadeIn 0.3s ease forwards; }
 .animate-slide-up { animation: slideUp 0.35s ease forwards; }
 .animate-scale-in { animation: scaleIn 0.2s ease forwards; }
 .animate-float-soft { animation: float-soft 7s ease-in-out infinite; }
 .animate-drift-sideways { animation: drift-sideways 9s ease-in-out infinite; }
+.animate-rotate-slowly { animation: rotate-slower 28s linear infinite; }
+.animate-pulse-aurora { animation: pulse-core 6.5s ease-in-out infinite; }
 
 /* ─── Skeleton Loading ──────────────────────────────────────── */
 .skeleton {
@@ -345,8 +355,7 @@ input[type="date"] {
   overflow: hidden;
 }
 
-.feed-motion-bg::before {
-  content: "";
+.feed-burst-core {
   position: absolute;
   left: 50%;
   top: 72px;
@@ -358,30 +367,18 @@ input[type="date"] {
     radial-gradient(circle, color-mix(in srgb, var(--color-gold) 34%, transparent) 0%, color-mix(in srgb, var(--color-accent) 24%, transparent) 24%, transparent 62%);
   filter: blur(12px);
   opacity: 0.42;
-  animation: pulse-aurora 8s ease-in-out infinite;
 }
 
-.feed-motion-bg::after {
-  content: "";
+.feed-burst-lines {
   position: absolute;
   left: 50%;
   top: 54px;
   width: 880px;
   height: 880px;
   transform: translateX(-50%);
-  border-radius: 50%;
-  background:
-    repeating-conic-gradient(
-      from 0deg,
-      color-mix(in srgb, var(--color-accent) 20%, transparent) 0deg,
-      transparent 4deg,
-      transparent 10deg
-    );
-  mask-image: radial-gradient(circle at center, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.55) 34%, transparent 68%);
-  opacity: 0.22;
-  filter: blur(1px);
+  opacity: 0.9;
+  overflow: visible;
   transform-origin: center;
-  animation: rotate-slow 36s linear infinite;
 }
 
 .feed-motion-orb {
@@ -619,7 +616,7 @@ input[type="date"] {
     top: 96px;
   }
 
-  .feed-motion-bg::after {
+  .feed-burst-lines {
     width: 620px;
     height: 620px;
     top: 92px;
