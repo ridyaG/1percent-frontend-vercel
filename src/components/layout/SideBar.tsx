@@ -1,8 +1,10 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Search, Flame, Trophy, Bell, User, LogOut, Plus } from 'lucide-react';
+import { Home, Search, Flame, Trophy, Bell, User, LogOut, Plus, MessageCircle } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
 import { authApi } from '../../api/auth';
+import { notificationsApi } from '../../api/notifications';
 import { getDefaultAvatar } from '../../lib/utils';
 
 const navItems = [
@@ -10,6 +12,7 @@ const navItems = [
   { to: '/explore',      icon: Search,  label: 'Explore' },
   { to: '/streaks',      icon: Flame,   label: 'Streaks' },
   { to: '/challenges',   icon: Trophy,  label: 'Challenges' },
+  { to: '/chat',         icon: MessageCircle, label: 'Messages' },
   { to: '/notifications',icon: Bell,    label: 'Alerts' },
   { to: '/profile',      icon: User,    label: 'Profile' },
 ];
@@ -24,6 +27,12 @@ export default function Sidebar() {
 
   const avatar = user?.avatarUrl || getDefaultAvatar(user?.username || 'user');
   const streak = user?.currentStreak || 0;
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ['notifications-unread-count'],
+    queryFn: notificationsApi.getUnreadCount,
+    enabled: !!user,
+    staleTime: 1000 * 30,
+  });
 
   const handleLogout = async () => {
     const refreshToken = sessionStorage.getItem('refreshToken');
@@ -104,6 +113,14 @@ export default function Sidebar() {
             >
               <Icon size={18} />
               <span>{label}</span>
+              {to === '/notifications' && unreadCount > 0 && (
+                <span
+                  className="ml-auto min-w-5 rounded-full px-1.5 py-0.5 text-[10px] font-bold text-center"
+                  style={{ background: 'var(--color-accent)', color: '#fff' }}
+                >
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
