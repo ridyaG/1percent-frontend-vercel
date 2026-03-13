@@ -114,11 +114,20 @@ function CreateChallengeModal({ onClose }: { onClose: () => void }) {
           <div
             className="rounded-[22px] p-4"
             style={{
-              background: 'color-mix(in srgb, var(--color-surface) 84%, white 16%)',
-              border: '1px solid var(--color-border)',
+              background:
+                'linear-gradient(135deg, color-mix(in srgb, var(--color-accent-bg) 78%, white 22%), color-mix(in srgb, var(--color-surface) 86%, white 14%))',
+              border: '1px solid color-mix(in srgb, var(--color-accent) 20%, var(--color-border) 80%)',
+              boxShadow: 'inset 4px 0 0 0 var(--color-accent)',
             }}
           >
-            <div className="text-sm font-semibold mb-1" style={{ color: 'var(--color-text)' }}>
+            <div
+              className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] mb-3"
+              style={{ background: 'rgba(255,255,255,0.42)', color: 'var(--color-accent)' }}
+            >
+              <Sparkles size={12} />
+              Quick guide
+            </div>
+            <div className="text-base font-semibold mb-1" style={{ color: 'var(--color-text)' }}>
               Start a shared sprint
             </div>
             <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
