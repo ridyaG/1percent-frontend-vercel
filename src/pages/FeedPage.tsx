@@ -64,7 +64,7 @@ export default function FeedPage() {
               <Flame size={14} />
               Daily momentum
             </div>
-            <h2 className="mb-2">Keep your momentum visible.</h2>
+            <h2 className="type-section mb-2">Keep your momentum visible.</h2>
             <p className="section-copy">
               Share small wins, track consistency, and make progress feel rewarding every time you open the feed.
             </p>
@@ -86,12 +86,12 @@ export default function FeedPage() {
 
       {streak > 0 && (
         <div
-          className="mb-4 flex items-center gap-3 rounded-2xl px-4 py-4"
-          style={{
-            background: 'linear-gradient(135deg, rgba(255,122,24,0.16), rgba(255,191,71,0.08))',
-            border: '1px solid rgba(255,122,24,0.18)',
-            boxShadow: 'var(--shadow-sm)',
-          }}
+        className="mb-4 flex items-center gap-3 rounded-2xl px-4 py-4"
+        style={{
+          background: 'color-mix(in srgb, var(--color-accent-bg) 75%, var(--color-surface) 25%)',
+          border: '1px solid var(--color-border)',
+          boxShadow: 'var(--shadow-sm)',
+        }}
         >
           <Flame size={18} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
           <div className="flex-1 min-w-0">
@@ -109,8 +109,7 @@ export default function FeedPage() {
         onClick={openCompose}
         className="w-full flex items-center gap-3 rounded-[24px] p-4 mb-5 text-left transition-all"
         style={{
-          background:
-            'linear-gradient(180deg, rgba(18,25,41,0.96), rgba(10,15,27,0.96))',
+          background: 'var(--gradient-surface)',
           border: '1px solid var(--color-border)',
           boxShadow: 'var(--shadow-md)',
         }}
