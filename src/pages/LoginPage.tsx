@@ -32,25 +32,43 @@ export default function LoginPage() {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: 'var(--color-bg)' }}
+      style={{ background: 'transparent' }}
     >
-      {/* Subtle background glow */}
       <div
         className="pointer-events-none fixed inset-0"
         style={{
           background:
-            'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,92,0,0.08) 0%, transparent 70%)',
+            'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,122,24,0.1) 0%, transparent 70%)',
         }}
       />
 
-      <div className="w-full max-w-sm relative animate-fade-in">
-        {/* Logo */}
+      <div className="w-full max-w-[960px] relative animate-fade-in">
+        <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="hidden lg:block pr-6">
+            <div className="eyebrow mb-4">
+              <Flame size={14} />
+              Build consistency
+            </div>
+            <h1 className="mb-4">Show up daily and make progress feel tangible.</h1>
+            <p className="section-copy text-base">
+              Track your streaks, share wins, and stay connected to a community built around steady improvement.
+            </p>
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+              {['Track streaks clearly', 'Post wins in seconds', 'Explore trending growth', 'Stay motivated daily'].map((item) => (
+                <div key={item} className="glass-panel px-4 py-4 text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="w-full max-w-sm justify-self-center">
         <div className="text-center mb-10">
           <div
             className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5"
             style={{
               background: 'var(--color-accent-bg)',
-              border: '1px solid rgba(255,92,0,0.25)',
+              border: '1px solid rgba(255,122,24,0.25)',
             }}
           >
             <Flame size={32} style={{ color: 'var(--color-accent)' }} />
@@ -72,13 +90,13 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Card */}
         <div
           className="rounded-2xl p-7"
           style={{
-            background: 'var(--color-surface)',
+            background: 'var(--gradient-surface)',
             border: '1px solid var(--color-border)',
-            boxShadow: '0 8px 40px rgba(0,0,0,0.4)',
+            boxShadow: 'var(--shadow-lg)',
+            backdropFilter: 'blur(16px)',
           }}
         >
           <h2
@@ -142,8 +160,8 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2"
-                  style={{ color: 'var(--color-text-muted)' }}
+                  className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-xl"
+                  style={{ color: 'var(--color-text-muted)', width: '36px', height: '36px' }}
                 >
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -186,6 +204,8 @@ export default function LoginPage() {
             Start your journey →
           </Link>
         </p>
+          </div>
+        </div>
       </div>
     </div>
   );
