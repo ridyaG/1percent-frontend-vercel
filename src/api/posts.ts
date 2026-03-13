@@ -21,5 +21,8 @@ export const postsApi = {
 
   addComment: (postId: string, data: { content: string; parentId?: string }) =>
     api.post(`/posts/${postId}/comments`, data).then(r => r.data.data),
+
+  getUserPosts: (userId: string) =>
+    api.get(`/users/${userId}/posts`).then(r => r.data.data),
 };
  
