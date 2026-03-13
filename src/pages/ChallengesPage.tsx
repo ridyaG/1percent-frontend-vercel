@@ -66,23 +66,41 @@ function CreateChallengeModal({ onClose }: { onClose: () => void }) {
     setForm(prev => ({ ...prev, [f]: e.target.value }));
 
   const valid = form.title && form.goal && form.startDate && form.endDate;
+  const fieldStyle = {
+    background: 'color-mix(in srgb, var(--color-surface) 88%, white 12%)',
+    border: '1px solid var(--color-border)',
+    color: 'var(--color-text)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+  } as const;
 
   return (
     <div
       className="modal-overlay"
       onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div className="modal-box w-full max-w-lg">
+      <div
+        className="modal-box w-full max-w-xl"
+        style={{
+          background:
+            'radial-gradient(circle at top right, color-mix(in srgb, var(--color-accent) 12%, transparent), transparent 28%), var(--gradient-surface)',
+          boxShadow: 'var(--shadow-lg)',
+        }}
+      >
         <div
           className="flex items-center justify-between px-5 py-4"
           style={{ borderBottom: '1px solid var(--color-border)' }}
         >
-          <h2
-            className="font-bold"
-            style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-text)' }}
-          >
-            Create a Challenge
-          </h2>
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
+              New challenge
+            </div>
+            <h2
+              className="font-bold"
+              style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-text)' }}
+            >
+              Create a Challenge
+            </h2>
+          </div>
           <button
             onClick={onClose}
             className="w-7 h-7 flex items-center justify-center rounded-lg"
@@ -93,6 +111,21 @@ function CreateChallengeModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="p-5 space-y-4 overflow-y-auto max-h-[70vh]">
+          <div
+            className="rounded-[22px] p-4"
+            style={{
+              background: 'color-mix(in srgb, var(--color-surface) 84%, white 16%)',
+              border: '1px solid var(--color-border)',
+            }}
+          >
+            <div className="text-sm font-semibold mb-1" style={{ color: 'var(--color-text)' }}>
+              Start a shared sprint
+            </div>
+            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              Define a clear title, a simple daily goal, and a timeline people can commit to.
+            </p>
+          </div>
+
           {[
             { label: 'Title',    key: 'title',    placeholder: '30-Day Coding Sprint',         type: 'text' },
             { label: 'Goal',     key: 'goal',     placeholder: 'Code for 1 hour every day',   type: 'text' },
@@ -110,6 +143,7 @@ function CreateChallengeModal({ onClose }: { onClose: () => void }) {
                 onChange={update(f.key)}
                 placeholder={f.placeholder}
                 className="input-base"
+                style={fieldStyle}
               />
             </div>
           ))}
@@ -127,6 +161,7 @@ function CreateChallengeModal({ onClose }: { onClose: () => void }) {
               placeholder="What's this challenge about?"
               className="input-base resize-none"
               rows={3}
+              style={fieldStyle}
             />
           </div>
 
@@ -147,6 +182,7 @@ function CreateChallengeModal({ onClose }: { onClose: () => void }) {
                   value={(form as Record<string,string>)[f.key]}
                   onChange={update(f.key)}
                   className="input-base"
+                  style={fieldStyle}
                 />
               </div>
             ))}
