@@ -1,105 +1,165 @@
 import { useState } from 'react';
-import CommentSection from './CommentSection';
 import { Heart, MessageCircle, Share2, Bookmark } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useLike } from '../../hooks/useLike';
 import StreakBadge from '../profile/StreakBadge';
+import CommentSection from './CommentSection';
 import type { Post } from '../../types/post';
 import { getDefaultAvatar } from '../../lib/utils';
+import toast from 'react-hot-toast';
 
-const POST_TYPES: Record<string, { label: string; icon: string }> = {
-  daily_win:  { label: 'Daily Win', icon: '🏆' },
-  milestone:  { label: 'Milestone', icon: '🎯' },
-  reflection: { label: 'Reflection', icon: '💭' },
-  challenge:  { label: 'Challenge', icon: '⚡' },
+const POST_TYPE_MAP: Record<string, { label: string; icon: string; color: string }> = {
+  daily_win:      { label: 'Daily Win',      icon: '🏆', color: 'rgba(255,162,0,0.12)'  },
+  milestone:      { label: 'Milestone',      icon: '🎯', color: 'rgba(99,102,241,0.12)' },
+  reflection:     { label: 'Reflection',     icon: '💭', color: 'rgba(14,165,233,0.12)' },
+  challenge:      { label: 'Challenge',      icon: '⚡', color: 'rgba(255,92,0,0.12)'   },
+  goal_update:    { label: 'Goal Update',    icon: '📈', color: 'rgba(16,185,129,0.12)' },
+  photo_progress: { label: 'Photo Progress', icon: '📸', color: 'rgba(244,63,94,0.12)'  },
 };
+
+function PostTypeBadge({ type }: { type: string }) {
+  const t = POST_TYPE_MAP[type] ?? POST_TYPE_MAP.daily_win;
+  return (
+    <span
+      className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
+      style={{
+        background: t.color,
+        color: 'var(--color-text)',
+        border: '1px solid rgba(255,255,255,0.07)',
+      }}
+    >
+      {t.icon} {t.label}
+    </span>
+  );
+}
+
+function linkHashtags(text: string) {
+  return text.replace(
+    /#(\w+)/g,
+    `<span style="color:var(--color-accent);cursor:pointer;font-weight:500" class="hashtag-link">#$1</span>`
+  );
+}
 
 export default function PostCard({ post }: { post: Post }) {
   const { mutate: toggleLike } = useLike();
   const [showComments, setShowComments] = useState(false);
-  const author = post.author;
-  const type = POST_TYPES[post.postType] || POST_TYPES.daily_win;
-  const likes = post._count?.likes ?? 0;
-  const comments = post._count?.comments ?? 0;
-  const time = formatDistanceToNow(new Date(post.publishedAt), { addSuffix: true });
+  const [bookmarked, setBookmarked] = useState(false);
 
-  const content = post.content.replace(
-    /#(\w+)/g,
-    `<span style="color:var(--color-accent);cursor:pointer" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">#$1</span>`
-  );
+  const author   = post.author;
+  const likes    = post._count?.likes ?? 0;
+  const comments = post._count?.comments ?? 0;
+  const time     = formatDistanceToNow(new Date(post.publishedAt), { addSuffix: true });
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/post/${post.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Check this out on 1% Better', url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copied!');
+      }
+    } catch {toast.error('Failed to copy link.');}
+  };
 
   return (
     <>
-      <div
-        className="rounded-2xl p-5 mb-3 transition-colors"
-        style={{
-          background: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-        }}
+      <article
+        className="card mb-3 p-5 animate-fade-in"
+        style={{ borderRadius: 'var(--radius-xl)' }}
       >
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-3">
+        {/* ── Header ── */}
+        <div className="flex items-start gap-3 mb-3">
           <img
             src={author.avatarUrl || getDefaultAvatar(author.username)}
-            className="w-10 h-10 rounded-full"
+            className="avatar avatar-md mt-0.5"
             alt={author.displayName}
-            onError={(e) => { (e.target as HTMLImageElement).src = getDefaultAvatar(author.username); }}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = getDefaultAvatar(author.username);
+            }}
           />
-          <div className="flex-1">
-            <div className="font-semibold text-sm" style={{ color: 'var(--color-text)' }}>
-              {author.displayName}
-              <span className="font-normal ml-1" style={{ color: 'var(--color-text-muted)' }}>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span
+                className="font-semibold text-sm"
+                style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}
+              >
+                {author.displayName}
+              </span>
+              <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
                 @{author.username}
               </span>
             </div>
-            <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{time}</div>
+            <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-subtle)' }}>
+              {time}
+            </div>
           </div>
           <StreakBadge streak={author.currentStreak || 0} />
         </div>
 
-        {/* Post type tag */}
-        <span
-          className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full mb-3"
-          style={{ background: 'var(--color-accent-bg)', color: 'var(--color-accent)' }}
-        >
-          {type.icon} {type.label}
-        </span>
+        {/* ── Type tag ── */}
+        <div className="mb-3">
+          <PostTypeBadge type={post.postType} />
+        </div>
 
-        {/* Content */}
+        {/* ── Content ── */}
         <p
-          className="text-[15px] leading-relaxed mb-4"
-          style={{ color: 'var(--color-text)' }}
-          dangerouslySetInnerHTML={{ __html: content }}
+          className="text-sm leading-relaxed mb-4"
+          style={{ color: 'var(--color-text)', lineHeight: '1.65' }}
+          dangerouslySetInnerHTML={{ __html: linkHashtags(post.content) }}
         />
 
-        {/* Actions */}
-        <div className="flex items-center gap-6 text-sm" style={{ color: 'var(--color-text-muted)' }}>
+        {/* ── Divider ── */}
+        <div className="divider mb-3" />
+
+        {/* ── Actions ── */}
+        <div className="flex items-center">
+          {/* Like */}
           <button
             onClick={() => toggleLike({ postId: post.id, liked: post.liked ?? false })}
-            className="flex items-center gap-1.5 transition-colors hover:text-pink-500"
-            style={{ color: post.liked ? '#ec4899' : undefined }}
+            className={`post-action ${post.liked ? 'liked' : ''}`}
           >
-            <Heart size={18} fill={post.liked ? 'currentColor' : 'none'} />
-            {likes}
+            <Heart
+              size={16}
+              fill={post.liked ? 'currentColor' : 'none'}
+              style={{ transition: 'transform 0.15s' }}
+            />
+            <span>{likes > 0 ? likes : ''}</span>
           </button>
+
+          {/* Comment */}
           <button
             onClick={() => setShowComments(v => !v)}
-            className="flex items-center gap-1.5 transition-colors hover:text-blue-400"
-            style={{ color: showComments ? '#60a5fa' : undefined }}
+            className={`post-action ${showComments ? 'active' : ''}`}
           >
-            <MessageCircle size={18} /> {comments}
+            <MessageCircle size={16} />
+            <span>{comments > 0 ? comments : ''}</span>
           </button>
-          <button className="flex items-center gap-1.5 hover:text-green-400 transition-colors">
-            <Share2 size={18} /> Share
+
+          {/* Share */}
+          <button onClick={handleShare} className="post-action">
+            <Share2 size={16} />
           </button>
-          <button className="ml-auto hover:text-yellow-400 transition-colors">
-            <Bookmark size={18} />
+
+          {/* Bookmark – ml-auto pushes to right */}
+          <button
+            onClick={() => setBookmarked(b => !b)}
+            className={`post-action ml-auto ${bookmarked ? 'active' : ''}`}
+          >
+            <Bookmark
+              size={16}
+              fill={bookmarked ? 'currentColor' : 'none'}
+            />
           </button>
         </div>
-      </div>
+      </article>
 
       {showComments && (
-        <CommentSection postId={post.id} post={post} onClose={() => setShowComments(false)} />
+        <CommentSection
+          postId={post.id}
+          post={post}
+          onClose={() => setShowComments(false)}
+        />
       )}
     </>
   );
