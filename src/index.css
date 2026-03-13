@@ -1,40 +1,42 @@
+@import "tailwindcss";
+
+/* Theme variables - controlled by JS */
 :root {
-  --color-bg: #0A0F1A;
-  --color-surface: #111827;
-  --color-card: #172033;
-  --color-border: #1F2937;
+  --color-bg: #0a0a0a;
+  --color-surface: #111111;
+  --color-surface-2: #1a1a1a;
+  --color-surface-3: #222222;
+  --color-border: rgba(255,255,255,0.05);
+  --color-text: #f0f0f0;
+  --color-text-muted: #888888;
+  --color-accent: #FF5C00;
+  --color-accent-text: #ffffff;
+  --color-accent-bg: rgba(255,92,0,0.15);
 
-  --color-text: #F1F5F9;
-  --color-text-muted: #94A3B8;
-
-  --color-accent: #F97316;
-  --color-accent-hover: #FB923C;
-  --color-accent-text: white;
-
-  --color-accent-bg: rgba(249, 115, 22, 0.14);
-  --color-accent-gradient: linear-gradient(135deg, #F97316 0%, #FDBA74 100%);
-
-  --color-hover: rgba(249, 115, 22, 0.12);
-  --color-active: rgba(249, 115, 22, 0.22);
-  --color-subtle: rgba(55, 65, 81, 0.4);
+  --color-brand: #FF5C00;
+  --color-brand-glow: rgba(146,70,26,0.25);
+  --color-gold: #ffa200;
+  --color-success: #0be087;
+  --color-danger: #d81208;
 }
 
 body {
-  @apply bg-[--color-bg] text-[--color-text];
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: "DM Sans", sans-serif;
+  transition: background-color 0.3s, color 0.3s;
+  box-shadow: 0 6px 24px rgba(255,106,0,0.35);
 }
 
-.card {
-  @apply bg-[--color-card] border border-[--color-border] rounded-xl;
+body, #root {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
 }
 
-.btn-primary {
-  @apply bg-[--color-accent] text-[--color-accent-text] hover:bg-[--color-accent-hover] active:scale-[0.98];
+/* Key layout elements */
+#root > div,
+main,
+.app-shell {
+  background-color: var(--color-bg) !important;
 }
 
-.bg-accent-subtle {
-  @apply bg-[--color-accent-bg];
-}
-
-.hover\\:bg-hover:hover {
-  @apply bg-[--color-hover];
-}
