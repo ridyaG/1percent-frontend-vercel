@@ -12,9 +12,9 @@ interface Orb {
 
 function hexToHsl(hex: string): [number, number, number] {
   const h = hex.replace('#', '');
-  const r = parseInt(h.slice(0, 2), 16) / 255;
-  const g = parseInt(h.slice(2, 4), 16) / 255;
-  const b = parseInt(h.slice(4, 6), 16) / 255;
+  let r = parseInt(h.slice(0, 2), 16) / 255;
+  let g = parseInt(h.slice(2, 4), 16) / 255;
+  let b = parseInt(h.slice(4, 6), 16) / 255;
   const max = Math.max(r, g, b), min = Math.min(r, g, b);
   let hue = 0, sat = 0;
   const lit = (max + min) / 2;
@@ -39,7 +39,7 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-export default function AnimatedCover({ className = '' }: { className?: string }) {
+export default function AnimatedCover({ className = '', style }: { className?: string; style?: React.CSSProperties }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef   = useRef<number>(0);
   const orbsRef   = useRef<Orb[]>([]);
@@ -161,7 +161,7 @@ export default function AnimatedCover({ className = '' }: { className?: string }
     <canvas
       ref={canvasRef}
       className={className}
-      style={{ width: '100%', height: '100%', display: 'block' }}
+      style={{ width: '100%', height: '100%', display: 'block', ...style }}
     />
   );
 }
