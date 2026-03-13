@@ -283,7 +283,7 @@ export default function ProfilePage() {
     <div className="max-w-2xl mx-auto">
       {/* Cover */}
       <div
-        className="h-36 relative"
+        <div className="h-36 relative overflow-hidden">
         style={{ background: 'linear-gradient(135deg, var(--color-accent-bg), var(--color-border))' }}
       >
         {user.coverUrl && (
