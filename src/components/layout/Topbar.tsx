@@ -1,6 +1,8 @@
-import { Menu, Bell, Plus } from 'lucide-react';
+import { Menu, Bell, Plus, MessageCircle } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { useUIStore } from '../../store/uiStore';
 import { useAuthStore } from '../../store/authStore';
+import { notificationsApi } from '../../api/notifications';
 import { getDefaultAvatar } from '../../lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useIsMobile } from '../../hooks/useMediaQuery';
@@ -10,6 +12,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/explore':       'Explore',
   '/streaks':       'Streaks',
   '/challenges':    'Challenges',
+  '/chat':          'Messages',
   '/notifications': 'Notifications',
   '/profile':       'Profile',
 };
@@ -21,6 +24,12 @@ export default function Topbar() {
   const navigate      = useNavigate();
   const location      = useLocation();
   const isMobile      = useIsMobile();
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ['notifications-unread-count'],
+    queryFn: notificationsApi.getUnreadCount,
+    enabled: !!user,
+    staleTime: 1000 * 30,
+  });
 
   const avatar     = user?.avatarUrl || getDefaultAvatar(user?.username || 'user');
   const pageTitle  = PAGE_TITLES[location.pathname] ?? '1% Better';
@@ -97,6 +106,21 @@ export default function Topbar() {
           )}
 
           <button
+            onClick={() => navigate('/chat')}
+            className="relative flex items-center justify-center rounded-xl transition-colors"
+            style={{
+              width: 'var(--tap-target)',
+              height: 'var(--tap-target)',
+              color: 'var(--color-text)',
+              background: location.pathname === '/chat' ? 'var(--color-accent-bg)' : 'rgba(255,255,255,0.04)',
+              border: '1px solid var(--color-border)',
+            }}
+            aria-label="Messages"
+          >
+            <MessageCircle size={18} />
+          </button>
+
+          <button
             onClick={() => navigate('/notifications')}
             className="relative flex items-center justify-center rounded-xl transition-colors"
             style={{
@@ -109,13 +133,18 @@ export default function Topbar() {
             aria-label="Notifications"
           >
             <Bell size={18} />
-            <span
-              className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full border-2"
-              style={{
-                background: 'var(--color-accent)',
-                borderColor: 'var(--color-bg)',
-              }}
-            />
+            {unreadCount > 0 && (
+              <span
+                className="absolute -right-1 -top-1 min-w-5 rounded-full px-1.5 py-0.5 text-[10px] font-bold"
+                style={{
+                  background: 'var(--color-accent)',
+                  color: '#fff',
+                  border: '2px solid var(--color-bg)',
+                }}
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </button>
 
           <button
