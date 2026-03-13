@@ -191,14 +191,14 @@ export const themes: Record<ThemeName, ThemeColors & {
     emoji: '🌃',
     description: 'Deep & focused',
 
-    bg: '#00030a',
-    surface: '#111827',
+    bg: '#0B0F14',
+    surface: '#111111',
     border: '#1F2937',
 
     text: '#F1F5F9',
     textMuted: '#94A3B8',
 
-    accent: '#F97316',
+    accent: '#FF5C00',
     accentHover: '#FB923C',
     accentText: '#FFFFFF',
 
