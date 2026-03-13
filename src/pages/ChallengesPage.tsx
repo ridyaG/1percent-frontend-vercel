@@ -50,7 +50,16 @@ const challengesApi = {
 // ── Create Modal ───────────────────────────────────────────────────
 function CreateChallengeModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
-  const [form, setForm] = useState({ title: '', description: '', goal: '', startDate: '', endDate: '' });
+  const today = new Date();
+  const defaultStartDate = today.toISOString().slice(0, 10);
+  const defaultEndDate = new Date(today.getTime() + 1000 * 60 * 60 * 24 * 30).toISOString().slice(0, 10);
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    goal: '',
+    startDate: defaultStartDate,
+    endDate: defaultEndDate,
+  });
 
   const { mutate, isPending } = useMutation({
     mutationFn: () => challengesApi.create(form),
@@ -65,7 +74,12 @@ function CreateChallengeModal({ onClose }: { onClose: () => void }) {
   const update = (f: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm(prev => ({ ...prev, [f]: e.target.value }));
 
-  const valid = form.title && form.goal && form.startDate && form.endDate;
+  const valid =
+    Boolean(form.title.trim()) &&
+    Boolean(form.goal.trim()) &&
+    Boolean(form.startDate) &&
+    Boolean(form.endDate) &&
+    new Date(form.endDate) >= new Date(form.startDate);
   const fieldStyle = {
     background: 'color-mix(in srgb, var(--color-surface) 88%, white 12%)',
     border: '1px solid var(--color-border)',
@@ -133,6 +147,9 @@ function CreateChallengeModal({ onClose }: { onClose: () => void }) {
             <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
               Define a clear title, a simple daily goal, and a timeline people can commit to.
             </p>
+            <div className="mt-3 text-xs font-medium" style={{ color: 'var(--color-accent)' }}>
+              Starts today by default and ends in 30 days.
+            </div>
           </div>
 
           {[
@@ -192,10 +209,24 @@ function CreateChallengeModal({ onClose }: { onClose: () => void }) {
                   onChange={update(f.key)}
                   className="input-base"
                   style={fieldStyle}
+                  min={f.key === 'endDate' ? form.startDate : defaultStartDate}
                 />
               </div>
             ))}
           </div>
+
+          {new Date(form.endDate) < new Date(form.startDate) && (
+            <div
+              className="rounded-xl px-4 py-3 text-sm"
+              style={{
+                background: 'rgba(255, 107, 122, 0.08)',
+                border: '1px solid rgba(255, 107, 122, 0.18)',
+                color: 'var(--color-danger)',
+              }}
+            >
+              End date must be the same day or later than the start date.
+            </div>
+          )}
         </div>
 
         <div
