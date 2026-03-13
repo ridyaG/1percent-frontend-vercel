@@ -191,7 +191,7 @@ export const themes: Record<ThemeName, ThemeColors & {
     emoji: '🌃',
     description: 'Deep & focused',
 
-    bg: '#0A0F1A',
+    bg: '#00030a',
     surface: '#111827',
     border: '#1F2937',
 
