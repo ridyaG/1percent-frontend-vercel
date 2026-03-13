@@ -56,7 +56,13 @@ export default function FeedPage() {
   const streak = user?.currentStreak || 0;
 
   return (
-    <div className="page-container">
+    <div className="page-container feed-stage">
+      <div className="feed-motion-bg" aria-hidden="true">
+        <div className="feed-motion-orb one" />
+        <div className="feed-motion-orb two" />
+        <div className="feed-motion-orb three" />
+      </div>
+
       <section className="page-hero animate-fade-in">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
