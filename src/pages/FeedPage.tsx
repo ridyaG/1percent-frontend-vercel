@@ -6,6 +6,7 @@ import { useAuthStore } from '../store/authStore';
 import { getDefaultAvatar } from '../lib/utils';
 import type { Post } from '../types/post';
 import { Flame, Pencil } from 'lucide-react';
+import FeedMotionBackground from '../components/FeedMotionBackground';
 
 function FeedSkeleton() {
   return (
@@ -57,11 +58,7 @@ export default function FeedPage() {
 
   return (
     <div className="page-container feed-stage">
-      <div className="feed-motion-bg" aria-hidden="true">
-        <div className="feed-motion-orb one" />
-        <div className="feed-motion-orb two" />
-        <div className="feed-motion-orb three" />
-      </div>
+      <FeedMotionBackground />
 
       <section className="page-hero animate-fade-in">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
