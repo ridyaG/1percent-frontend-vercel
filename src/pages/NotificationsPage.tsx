@@ -139,21 +139,23 @@ export default function NotificationsPage() {
             </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="glass-panel px-4 py-4 min-w-[140px]">
-              <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
-                Unread
+          <div className="w-full max-w-[320px]">
+            <div className="grid gap-3 grid-cols-2">
+              <div className="glass-panel px-4 py-4 min-w-0">
+                <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
+                  Unread
+                </div>
+                <div className="mt-1 text-2xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
+                  {unreadCount}
+                </div>
               </div>
-              <div className="mt-1 text-2xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
-                {unreadCount}
-              </div>
-            </div>
-            <div className="glass-panel px-4 py-4 min-w-[140px]">
-              <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
-                Total
-              </div>
-              <div className="mt-1 text-2xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
-                {notifications.length}
+              <div className="glass-panel px-4 py-4 min-w-0">
+                <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
+                  Total
+                </div>
+                <div className="mt-1 text-2xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
+                  {notifications.length}
+                </div>
               </div>
             </div>
           </div>
