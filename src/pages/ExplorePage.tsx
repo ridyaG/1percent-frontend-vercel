@@ -105,7 +105,7 @@ export default function ExplorePage() {
               <Compass size={14} />
               Discover
             </div>
-            <h2 className="mb-2">Find people, ideas, and momentum.</h2>
+            <h2 className="type-section mb-2">Find people, ideas, and momentum.</h2>
             <p className="section-copy">
               Search the community, jump into trending topics, and surface recent progress updates without losing context.
             </p>
@@ -122,7 +122,7 @@ export default function ExplorePage() {
       <div
         className="mb-4 flex items-center gap-3 rounded-[24px] px-4 py-3 transition-all"
         style={{
-          background: 'linear-gradient(180deg, rgba(18,25,41,0.96), rgba(10,15,27,0.96))',
+          background: 'var(--gradient-surface)',
           border: '1px solid var(--color-border)',
           boxShadow: 'var(--shadow-sm)',
         }}
