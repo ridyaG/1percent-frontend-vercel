@@ -12,9 +12,9 @@ interface Orb {
 
 function hexToHsl(hex: string): [number, number, number] {
   const h = hex.replace('#', '');
-  let r = parseInt(h.slice(0, 2), 16) / 255;
-  let g = parseInt(h.slice(2, 4), 16) / 255;
-  let b = parseInt(h.slice(4, 6), 16) / 255;
+  const r = parseInt(h.slice(0, 2), 16) / 255;
+  const g = parseInt(h.slice(2, 4), 16) / 255;
+  const b = parseInt(h.slice(4, 6), 16) / 255;
   const max = Math.max(r, g, b), min = Math.min(r, g, b);
   let hue = 0, sat = 0;
   const lit = (max + min) / 2;
