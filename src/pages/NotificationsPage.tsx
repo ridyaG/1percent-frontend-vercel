@@ -17,6 +17,7 @@ function NotifItem({ notif, onRead }: { notif: Notification; onRead: (id: string
     reply:            'replied to your comment',
     follow:           'started following you',
     follow_request:   'sent you a follow request',
+    message:          'sent you a message',
     mention:          'mentioned you in a post',
     streak_milestone: 'reached a streak milestone!',
     streak_reminder:  "don't forget to post today!",
@@ -114,12 +115,18 @@ export default function NotificationsPage() {
 
   const { mutate: markRead } = useMutation({
     mutationFn: notificationsApi.markRead,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+    },
   });
 
   const { mutate: markAllRead, isPending: markingAll } = useMutation({
     mutationFn: notificationsApi.markAllRead,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+    },
   });
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
