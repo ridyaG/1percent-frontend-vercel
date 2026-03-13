@@ -355,65 +355,12 @@ input[type="date"] {
   overflow: hidden;
 }
 
-.feed-burst-core {
-  position: absolute;
-  left: 50%;
-  top: 72px;
-  width: 760px;
-  height: 760px;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background:
-    radial-gradient(circle, color-mix(in srgb, var(--color-gold) 34%, transparent) 0%, color-mix(in srgb, var(--color-accent) 24%, transparent) 24%, transparent 62%);
-  filter: blur(12px);
-  opacity: 0.42;
-}
-
-.feed-burst-lines {
-  position: absolute;
-  left: 50%;
-  top: 54px;
-  width: 880px;
-  height: 880px;
-  transform: translateX(-50%);
-  opacity: 0.9;
-  overflow: visible;
-  transform-origin: center;
-}
-
-.feed-motion-orb {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(48px);
-  opacity: 0.34;
-}
-
-.feed-motion-orb.one {
-  width: 260px;
-  height: 260px;
-  top: 180px;
-  left: 4%;
-  background: color-mix(in srgb, var(--color-secondary) 36%, transparent);
-  animation: drift-sideways 12s ease-in-out infinite;
-}
-
-.feed-motion-orb.two {
-  width: 340px;
-  height: 340px;
-  top: 120px;
-  right: 2%;
-  background: color-mix(in srgb, var(--color-accent) 34%, transparent);
-  animation: drift-diagonal 14s ease-in-out infinite;
-}
-
-.feed-motion-orb.three {
-  width: 220px;
-  height: 220px;
-  top: 420px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: color-mix(in srgb, var(--color-gold) 20%, transparent);
-  animation: pulse-aurora 10s ease-in-out infinite;
+.feed-motion-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0.95;
+  filter: saturate(1.05);
 }
 
 .feed-stage > *:not(.feed-motion-bg) {
@@ -610,21 +557,7 @@ input[type="date"] {
     font-size: 0.9rem;
   }
 
-  .feed-motion-bg::before {
-    width: 520px;
-    height: 520px;
-    top: 96px;
-  }
-
-  .feed-burst-lines {
-    width: 620px;
-    height: 620px;
-    top: 92px;
-  }
-
-  .feed-motion-orb.one,
-  .feed-motion-orb.two,
-  .feed-motion-orb.three {
-    opacity: 0.22;
+  .feed-motion-canvas {
+    opacity: 0.72;
   }
 }
