@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Force themed surfaces */
+header, aside, nav {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+}
+
 /* Theme variables - controlled by JS */
 :root {
   --color-bg: #0a0a0a;
