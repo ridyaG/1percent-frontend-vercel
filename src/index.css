@@ -355,12 +355,89 @@ input[type="date"] {
   overflow: hidden;
 }
 
-.feed-motion-canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-  opacity: 0.95;
-  filter: saturate(1.05);
+.feed-motion-rings {
+  position: absolute;
+  left: 50%;
+  top: 92px;
+  width: min(86vw, 920px);
+  aspect-ratio: 1 / 1;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  background:
+    repeating-conic-gradient(
+      from 0deg,
+      color-mix(in srgb, var(--color-accent) 16%, transparent) 0deg,
+      color-mix(in srgb, var(--color-accent) 8%, transparent) 2deg,
+      transparent 4deg,
+      transparent 9deg
+    );
+  mask-image: radial-gradient(circle at center, transparent 0 10%, rgba(0, 0, 0, 0.85) 28%, transparent 62%);
+  opacity: 0.42;
+  filter: blur(0.8px);
+  animation: rotate-slower 26s linear infinite;
+}
+
+.feed-motion-bloom {
+  position: absolute;
+  left: 50%;
+  top: 190px;
+  border-radius: 9999px;
+  transform: translateX(-50%);
+  filter: blur(44px);
+}
+
+.feed-motion-bloom.main {
+  width: min(70vw, 720px);
+  height: min(44vw, 420px);
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 30%, transparent) 0%, color-mix(in srgb, var(--color-gold) 18%, transparent) 36%, transparent 72%);
+  opacity: 0.42;
+  animation: pulse-core 6.5s ease-in-out infinite;
+}
+
+.feed-motion-bloom.warm {
+  width: min(42vw, 420px);
+  height: min(32vw, 320px);
+  margin-left: 170px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 32%, transparent) 0%, transparent 70%);
+  opacity: 0.26;
+  animation: drift-diagonal 12s ease-in-out infinite;
+}
+
+.feed-motion-bloom.cool {
+  width: min(34vw, 340px);
+  height: min(28vw, 280px);
+  margin-left: -210px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-secondary) 24%, transparent) 0%, transparent 72%);
+  opacity: 0.22;
+  animation: drift-sideways 11s ease-in-out infinite;
+}
+
+.feed-motion-beam {
+  position: absolute;
+  left: 50%;
+  top: 150px;
+  width: min(68vw, 720px);
+  height: 1px;
+  transform-origin: left center;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 0%, transparent), color-mix(in srgb, var(--color-accent) 38%, transparent), transparent 92%);
+  opacity: 0.3;
+}
+
+.feed-motion-beam.beam-a {
+  transform: translateX(-6%) rotate(12deg);
+  animation: drift-sideways 10s ease-in-out infinite;
+}
+
+.feed-motion-beam.beam-b {
+  transform: translateX(-16%) rotate(-8deg);
+  opacity: 0.22;
+  animation: drift-diagonal 13s ease-in-out infinite;
+}
+
+.feed-motion-beam.beam-c {
+  transform: translateX(-10%) rotate(28deg);
+  opacity: 0.18;
+  animation: float-soft 9s ease-in-out infinite;
 }
 
 .feed-stage > *:not(.feed-motion-bg) {
@@ -559,5 +636,27 @@ input[type="date"] {
 
   .feed-motion-canvas {
     opacity: 0.72;
+  }
+
+  .feed-motion-rings {
+    top: 120px;
+    width: min(110vw, 640px);
+    opacity: 0.28;
+  }
+
+  .feed-motion-bloom.main {
+    width: min(94vw, 520px);
+    height: min(64vw, 320px);
+  }
+
+  .feed-motion-bloom.warm,
+  .feed-motion-bloom.cool {
+    margin-left: 0;
+    opacity: 0.16;
+  }
+
+  .feed-motion-beam {
+    width: min(94vw, 440px);
+    opacity: 0.14;
   }
 }
