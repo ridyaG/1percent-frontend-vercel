@@ -51,44 +51,46 @@ export default function Sidebar() {
                     transition-transform duration-300 ease-in-out md:translate-x-0
                     ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{
-          background: 'var(--color-surface)',
+          background: 'linear-gradient(180deg, rgba(14, 20, 35, 0.98), rgba(9, 13, 24, 0.96))',
           borderRight: '1px solid var(--color-border)',
+          boxShadow: '20px 0 40px rgba(2, 6, 23, 0.26)',
         }}
       >
-        {/* ── Logo ── */}
         <div className="px-5 pt-6 pb-4 flex items-center gap-2.5">
           <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-            style={{ background: 'var(--color-accent)', boxShadow: '0 0 16px rgba(255,92,0,0.4)' }}
+            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: 'var(--gradient-brand)', boxShadow: '0 0 18px rgba(255,122,24,0.28)' }}
           >
-            <Flame size={16} color="#fff" />
+            <Flame size={18} color="#fff" />
           </div>
-          <span
-            className="text-lg font-bold tracking-tight"
-            style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-text)' }}
-          >
-            1<span style={{ color: 'var(--color-accent)' }}>%</span> Better
-          </span>
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.22em]" style={{ color: 'var(--color-secondary)' }}>
+              Build daily
+            </div>
+            <span
+              className="text-lg font-bold tracking-tight"
+              style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-text)' }}
+            >
+              1<span style={{ color: 'var(--color-accent)' }}>%</span> Better
+            </span>
+          </div>
         </div>
 
-        {/* ── Compose button ── */}
         <div className="px-4 pb-4">
           <button
             onClick={() => { openCompose(); if (sidebarOpen) toggleSidebar(); }}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm transition-all hover:shadow-lg"
+            className="w-full flex items-center justify-center gap-2 rounded-2xl font-semibold text-sm transition-all"
             style={{
-              background: 'var(--color-accent)',
+              minHeight: '48px',
+              background: 'var(--gradient-brand)',
               color: '#fff',
-              boxShadow: '0 2px 10px var(--color-accent-glow)',
+              boxShadow: 'var(--shadow-accent)',
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-accent-hover)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-accent)')}
           >
             <Plus size={16} /> New Post
           </button>
         </div>
 
-        {/* ── Nav ── */}
         <nav className="flex flex-col gap-0.5 flex-1 px-3 overflow-y-auto">
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
@@ -106,13 +108,14 @@ export default function Sidebar() {
           ))}
         </nav>
 
-        {/* ── Bottom section ── */}
         <div className="px-3 pb-5 space-y-2">
-          {/* Streak mini card */}
           {streak > 0 && (
             <div
-              className="rounded-xl px-3 py-2.5 flex items-center gap-2.5"
-              style={{ background: 'var(--color-accent-bg)', border: '1px solid rgba(255,92,0,0.15)' }}
+              className="rounded-2xl px-3 py-3 flex items-center gap-2.5"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,122,24,0.14), rgba(255,191,71,0.08))',
+                border: '1px solid rgba(255,122,24,0.16)',
+              }}
             >
               <span className="text-xl">🔥</span>
               <div>
@@ -124,12 +127,10 @@ export default function Sidebar() {
             </div>
           )}
 
-          {/* User row */}
           <div
-            className="flex items-center gap-2.5 px-2 py-2 rounded-xl"
-            style={{ border: '1px solid var(--color-border)' }}
+            className="glass-panel flex items-center gap-2.5 px-3 py-3 rounded-2xl"
           >
-            <img src={avatar} className="w-7 h-7 rounded-full" alt="" />
+            <img src={avatar} className="w-9 h-9 rounded-full" alt="" />
             <div className="flex-1 min-w-0">
               <div className="text-xs font-semibold truncate" style={{ color: 'var(--color-text)' }}>
                 {user?.displayName}
@@ -141,15 +142,11 @@ export default function Sidebar() {
             <button
               onClick={handleLogout}
               title="Log out"
-              className="p-1.5 rounded-lg transition-colors"
-              style={{ color: 'var(--color-text-subtle)' }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.color = 'var(--color-danger)';
-                (e.currentTarget as HTMLElement).style.background = 'rgba(255,64,64,0.1)';
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.color = 'var(--color-text-subtle)';
-                (e.currentTarget as HTMLElement).style.background = 'transparent';
+              className="flex items-center justify-center rounded-xl transition-colors"
+              style={{
+                width: 'var(--tap-target)',
+                height: 'var(--tap-target)',
+                color: 'var(--color-text-subtle)',
               }}
             >
               <LogOut size={15} />
