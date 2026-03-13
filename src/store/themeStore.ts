@@ -205,7 +205,7 @@ export const themes: Record<ThemeName, ThemeColors & {
     accentBg: 'rgba(249, 115, 22, 0.14)',
     accentGradient: 'linear-gradient(135deg, #F97316 0%, #FDBA74 100%)',
 
-    card: '#172033',
+    card: '#000206',
     hover: 'rgba(249, 115, 22, 0.12)',
     active: 'rgba(249, 115, 22, 0.22)',
     subtle: 'rgba(55, 65, 81, 0.4)',
