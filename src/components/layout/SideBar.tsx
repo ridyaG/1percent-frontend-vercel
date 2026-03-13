@@ -23,8 +23,7 @@ export default function Sidebar() {
   const handleLogout = async () => {
     const refreshToken = sessionStorage.getItem('refreshToken');
     if (refreshToken) {
-      try { await authApi.logout(refreshToken); } catch {// Logout API call failed, but we'll proceed with local logout
-        }
+      try { await authApi.logout(refreshToken); } catch {}
     }
     sessionStorage.clear();
     logout();
@@ -34,21 +33,39 @@ export default function Sidebar() {
   return (
     <>
       {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={toggleSidebar} />
+        <div
+          className="fixed inset-0 z-40 md:hidden"
+          style={{ background: 'rgba(0,0,0,0.5)' }}
+          onClick={toggleSidebar}
+        />
       )}
 
       <aside
-          className={`fixed top-0 left-0 w-[220px] h-screen bg-[#111] border-r border-white/5 
-                      flex flex-col p-6 z-50 transition-transform duration-300
-                      md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
-        >
+        className={`fixed top-0 left-0 w-[220px] h-screen flex flex-col p-6 z-50
+                    transition-transform duration-300 md:translate-x-0
+                    ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        style={{
+          background: 'var(--color-surface)',
+          borderRight: '1px solid var(--color-border)',
+        }}
+      >
+        {/* Logo */}
         <div className="mb-10 pl-2">
-          <span className="text-5xl font-bold text-[#FF5C00]" style={{ textShadow: '0 0 30px rgba(255,92,0,0.25)' }}>
+          <span
+            className="text-5xl font-bold"
+            style={{ color: 'var(--color-accent)' }}
+          >
             1%
           </span>
-          <span className="text-xs text-gray-600 tracking-[3px] ml-1">BETTER</span>
+          <span
+            className="text-xs tracking-[3px] ml-1"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            BETTER
+          </span>
         </div>
 
+        {/* Nav */}
         <nav className="flex flex-col gap-1 flex-1">
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
@@ -56,31 +73,64 @@ export default function Sidebar() {
               to={to}
               end={to === '/'}
               onClick={() => sidebarOpen && toggleSidebar()}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                  isActive
-                    ? 'bg-[#FF5C00]/10 text-[#FF5C00]'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`
-              }
             >
-              <Icon size={20} />
-              <span>{label}</span>
+              {({ isActive }) => (
+                <span
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
+                  style={{
+                    background: isActive ? 'var(--color-accent-bg)' : 'transparent',
+                    color: isActive ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                  }}
+                  onMouseEnter={e => {
+                    if (!isActive) {
+                      (e.currentTarget as HTMLElement).style.color = 'var(--color-text)';
+                      (e.currentTarget as HTMLElement).style.background = 'var(--color-border)';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (!isActive) {
+                      (e.currentTarget as HTMLElement).style.color = 'var(--color-text-muted)';
+                      (e.currentTarget as HTMLElement).style.background = 'transparent';
+                    }
+                  }}
+                >
+                  <Icon size={20} />
+                  <span>{label}</span>
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
 
+        {/* Logout */}
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2.5 text-gray-500 hover:text-red-400 text-sm transition-colors mt-2"
+          className="flex items-center gap-3 px-3 py-2.5 text-sm transition-colors mt-2 rounded-lg"
+          style={{ color: 'var(--color-text-muted)' }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}
         >
           <LogOut size={20} /> Log Out
         </button>
 
-        <div className="mt-4 text-center py-3 bg-[#1a1a1a] rounded-xl">
-          <span className="text-3xl font-bold text-[#FF5C00]">{user?.currentStreak || 0}</span>
+        {/* Streak card */}
+        <div
+          className="mt-4 text-center py-3 rounded-xl"
+          style={{ background: 'var(--color-surface-2)' }}
+        >
+          <span
+            className="text-3xl font-bold"
+            style={{ color: 'var(--color-accent)' }}
+          >
+            {user?.currentStreak || 0}
+          </span>
           <span className="ml-1">🔥</span>
-          <div className="text-xs text-gray-500 mt-1">Day Streak</div>
+          <div
+            className="text-xs mt-1"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            Day Streak
+          </div>
         </div>
       </aside>
     </>
