@@ -22,6 +22,14 @@ interface NewMessagePayload {
   };
 }
 
+interface MessageMutationPayload {
+  conversationId: string;
+}
+
+interface ConversationDeletedPayload {
+  conversationId: string;
+}
+
 let sharedSocket: Socket | null = null;
 let listenersAttached = false;
 let latestPathname = '';
@@ -34,6 +42,10 @@ function disconnectSharedSocket() {
     sharedSocket = null;
     listenersAttached = false;
   }
+}
+
+export function getSharedSocket() {
+  return sharedSocket;
 }
 
 export function useSocket() {
@@ -89,6 +101,21 @@ export function useSocket() {
         if (!isViewingConversation) {
           toast(`${message.sender.displayName}: ${message.content.slice(0, 40)}`, { icon: '💬' });
         }
+      });
+
+      sharedSocket.on('message_updated', ({ conversationId }: MessageMutationPayload) => {
+        queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+        queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      });
+
+      sharedSocket.on('message_deleted', ({ conversationId }: MessageMutationPayload) => {
+        queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+        queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      });
+
+      sharedSocket.on('conversation_deleted', ({ conversationId }: ConversationDeletedPayload) => {
+        queryClient.invalidateQueries({ queryKey: ['conversations'] });
+        queryClient.removeQueries({ queryKey: ['messages', conversationId] });
       });
 
       listenersAttached = true;
