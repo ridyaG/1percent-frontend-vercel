@@ -457,7 +457,7 @@ function ChallengeCard({ challenge, onClick }: { challenge: Challenge; onClick: 
         </span>
       </div>
 
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <h3
             className="font-bold mb-1"
@@ -493,7 +493,7 @@ function ChallengeCard({ challenge, onClick }: { challenge: Challenge; onClick: 
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-3 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+          <div className="grid gap-3 text-xs sm:grid-cols-3" style={{ color: 'var(--color-text-muted)' }}>
             <span className="flex items-center gap-1">
               <Users size={11} /> {challenge._count.participants} joined
             </span>
@@ -507,7 +507,12 @@ function ChallengeCard({ challenge, onClick }: { challenge: Challenge; onClick: 
             }
           </div>
         </div>
-        <ChevronRight size={18} style={{ color: 'var(--color-text-subtle)', flexShrink: 0, marginTop: 4 }} />
+        <div
+          className="flex h-10 w-10 items-center justify-center rounded-full"
+          style={{ background: 'color-mix(in srgb, var(--color-surface) 82%, white 18%)', flexShrink: 0 }}
+        >
+          <ChevronRight size={18} style={{ color: 'var(--color-text-subtle)' }} />
+        </div>
       </div>
     </div>
   );
@@ -549,26 +554,28 @@ export default function ChallengesPage() {
             </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="glass-panel px-4 py-4 min-w-[132px]">
-              <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
-                Active
+          <div className="w-full max-w-[440px]">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="glass-panel px-4 py-4 min-w-0">
+                <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
+                  Active
+                </div>
+                <div className="mt-1 text-2xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
+                  {activeChallenges}
+                </div>
               </div>
-              <div className="mt-1 text-2xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
-                {activeChallenges}
-              </div>
-            </div>
-            <div className="glass-panel px-4 py-4 min-w-[132px]">
-              <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
-                People in play
-              </div>
-              <div className="mt-1 text-2xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
-                {totalParticipants}
+              <div className="glass-panel px-4 py-4 min-w-0">
+                <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
+                  People in play
+                </div>
+                <div className="mt-1 text-2xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
+                  {totalParticipants}
+                </div>
               </div>
             </div>
             <button
               onClick={() => setShowCreate(true)}
-              className="btn btn-primary self-stretch"
+              className="btn btn-primary mt-3 w-full justify-center"
               style={{ borderRadius: '18px' }}
             >
               <Plus size={16} />
