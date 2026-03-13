@@ -284,10 +284,14 @@ export default function ProfilePage() {
   const followingCount = profile?._count?.following ?? 0;
 
   return (
-    <div className="max-w-2xl mx-auto">
-      {/* Cover */}
-      <div className="h-52 relative overflow-hidden">
-        <AnimatedCover className="absolute inset-0" />
+    <div className="max-w-2xl mx-auto relative">
+      {/* Animated background — sits behind the whole page */}
+      <AnimatedCover className="fixed inset-0" style={{ zIndex: -1, width: '100vw', height: '100vh' }} />
+
+      {/* Cover — plain gradient, no animation */}
+      <div className="h-36 relative overflow-hidden rounded-b-2xl"
+        style={{ background: 'linear-gradient(135deg, var(--color-surface) 0%, var(--color-accent-bg) 100%)' }}
+      >
         {user.coverUrl && (
           <img src={user.coverUrl} className="absolute inset-0 w-full h-full object-cover" alt="" />
         )}
