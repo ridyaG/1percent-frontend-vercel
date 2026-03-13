@@ -65,10 +65,9 @@ export default function PostCard({ post }: { post: Post }) {
   return (
     <>
       <article
-        className="card mb-3 p-5 animate-fade-in"
+        className="card mb-4 p-5 animate-fade-in"
         style={{ borderRadius: 'var(--radius-xl)' }}
       >
-        {/* ── Header ── */}
         <div className="flex items-start gap-3 mb-3">
           <img
             src={author.avatarUrl || getDefaultAvatar(author.username)}
@@ -97,24 +96,19 @@ export default function PostCard({ post }: { post: Post }) {
           <StreakBadge streak={author.currentStreak || 0} />
         </div>
 
-        {/* ── Type tag ── */}
         <div className="mb-3">
           <PostTypeBadge type={post.postType} />
         </div>
 
-        {/* ── Content ── */}
         <p
           className="text-sm leading-relaxed mb-4"
-          style={{ color: 'var(--color-text)', lineHeight: '1.65' }}
+          style={{ color: 'var(--color-text)', lineHeight: '1.72' }}
           dangerouslySetInnerHTML={{ __html: linkHashtags(post.content) }}
         />
 
-        {/* ── Divider ── */}
         <div className="divider mb-3" />
 
-        {/* ── Actions ── */}
         <div className="flex items-center">
-          {/* Like */}
           <button
             onClick={() => toggleLike({ postId: post.id, liked: post.liked ?? false })}
             className={`post-action ${post.liked ? 'liked' : ''}`}
@@ -127,7 +121,6 @@ export default function PostCard({ post }: { post: Post }) {
             <span>{likes > 0 ? likes : ''}</span>
           </button>
 
-          {/* Comment */}
           <button
             onClick={() => setShowComments(v => !v)}
             className={`post-action ${showComments ? 'active' : ''}`}
@@ -136,12 +129,10 @@ export default function PostCard({ post }: { post: Post }) {
             <span>{comments > 0 ? comments : ''}</span>
           </button>
 
-          {/* Share */}
           <button onClick={handleShare} className="post-action">
             <Share2 size={16} />
           </button>
 
-          {/* Bookmark – ml-auto pushes to right */}
           <button
             onClick={() => setBookmarked(b => !b)}
             className={`post-action ml-auto ${bookmarked ? 'active' : ''}`}
