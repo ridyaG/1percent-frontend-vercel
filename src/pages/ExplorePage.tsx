@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, TrendingUp, Hash, X } from 'lucide-react';
+import { Search, TrendingUp, Hash, X, Compass, Sparkles } from 'lucide-react';
 import api from '../api/client';
 import PostCard from '../components/post/PostCard';
 import { getDefaultAvatar } from '../lib/utils';
@@ -98,20 +98,33 @@ export default function ExplorePage() {
 
   return (
     <div className="page-container">
-      {/* ── Search bar ── */}
+      <section className="page-hero animate-fade-in">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="eyebrow mb-3">
+              <Compass size={14} />
+              Discover
+            </div>
+            <h2 className="mb-2">Find people, ideas, and momentum.</h2>
+            <p className="section-copy">
+              Search the community, jump into trending topics, and surface recent progress updates without losing context.
+            </p>
+          </div>
+          <div className="glass-panel flex items-center gap-3 self-start px-4 py-3">
+            <Sparkles size={16} style={{ color: 'var(--color-accent)' }} />
+            <div className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              Explore what people are improving this week.
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div
-        className="flex items-center gap-3 rounded-2xl px-4 py-3 mb-4 transition-all"
+        className="mb-4 flex items-center gap-3 rounded-[24px] px-4 py-3 transition-all"
         style={{
-          background: 'var(--color-surface)',
+          background: 'linear-gradient(180deg, rgba(18,25,41,0.96), rgba(10,15,27,0.96))',
           border: '1px solid var(--color-border)',
-        }}
-        onFocusCapture={e => {
-          (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-accent)';
-          (e.currentTarget as HTMLElement).style.boxShadow = '0 0 0 3px var(--color-accent-bg)';
-        }}
-        onBlurCapture={e => {
-          (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)';
-          (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+          boxShadow: 'var(--shadow-sm)',
         }}
       >
         <Search size={17} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
@@ -126,8 +139,13 @@ export default function ExplorePage() {
         {query && (
           <button
             onClick={clearSearch}
-            className="w-5 h-5 rounded-full flex items-center justify-center transition-colors"
-            style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-muted)' }}
+            className="rounded-full flex items-center justify-center transition-colors"
+            style={{
+              width: '32px',
+              height: '32px',
+              background: 'var(--color-surface-2)',
+              color: 'var(--color-text-muted)',
+            }}
           >
             <X size={11} />
           </button>
@@ -137,16 +155,17 @@ export default function ExplorePage() {
       {/* ── Search type tabs ── */}
       {isSearching && (
         <div
-          className="flex gap-1 rounded-xl p-1 mb-4"
-          style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+          className="flex gap-1 rounded-2xl p-1.5 mb-4"
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border)' }}
         >
           {(['posts', 'users', 'hashtags'] as const).map(t => (
             <button
               key={t}
               onClick={() => setSearchType(t)}
-              className="flex-1 py-2 rounded-lg text-sm font-semibold capitalize transition-all"
+              className="flex-1 rounded-xl text-sm font-semibold capitalize transition-all"
               style={{
-                background: searchType === t ? 'var(--color-accent)' : 'transparent',
+                minHeight: '42px',
+                background: searchType === t ? 'var(--gradient-brand)' : 'transparent',
                 color: searchType === t ? '#fff' : 'var(--color-text-muted)',
               }}
             >
@@ -180,12 +199,7 @@ export default function ExplorePage() {
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp size={15} style={{ color: 'var(--color-accent)' }} />
-                <h3
-                  className="font-bold text-sm"
-                  style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-text)' }}
-                >
-                  Trending This Week
-                </h3>
+                <h3 className="section-title">Trending This Week</h3>
               </div>
               <div className="flex flex-wrap gap-2">
                 {(trending as TrendingTag[]).map(({ tag, count }) => (
@@ -210,12 +224,7 @@ export default function ExplorePage() {
 
           {/* Recent posts */}
           <div>
-            <h3
-              className="font-bold text-sm mb-3"
-              style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-text)' }}
-            >
-              Recent Posts
-            </h3>
+            <h3 className="section-title mb-3">Recent Posts</h3>
             {(recentPosts as Post[]).length === 0 ? (
               <div className="empty-state">
                 <div className="empty-state-icon">✍️</div>
