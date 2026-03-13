@@ -15,19 +15,17 @@ export default function AppShell() {
 
   return (
     <div
-      className="flex min-h-screen relative overflow-hidden"
-      style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}
+      className="app-shell flex min-h-screen relative overflow-hidden"
+      style={{ background: 'transparent', color: 'var(--color-text)' }}
     >
-      {/* Ambient fire — fixed behind UI, subtle */}
       <div
         className="fixed inset-0 pointer-events-none"
-        style={{ zIndex: 0, opacity: 0.35 }}
+        style={{ zIndex: 0, opacity: 0.24 }}
         aria-hidden="true"
       >
         <FireCanvas sparkFreq={1} floorFrac={0.04} />
       </div>
 
-      {/* All UI above fire */}
       <div className="relative z-10 flex w-full min-h-screen">
         <Sidebar />
 
@@ -36,10 +34,11 @@ export default function AppShell() {
           style={{ background: 'transparent' }}
         >
           <Topbar />
-          {/* Content — padded for topbar; extra padding on mobile for bottom nav */}
           <div
-            className="pt-[60px]"
-            style={{ paddingBottom: isMobile ? '72px' : '0' }}
+            style={{
+              paddingTop: 'var(--topbar-height)',
+              paddingBottom: isMobile ? 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom))' : '24px',
+            }}
           >
             <Outlet />
           </div>
@@ -49,7 +48,6 @@ export default function AppShell() {
 
         <ComposeModal />
 
-        {/* Theme selector — desktop only */}
         {!isMobile && <ThemeFloating />}
 
         <Toaster
