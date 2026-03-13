@@ -51,7 +51,7 @@ export default function Sidebar() {
                     transition-transform duration-300 ease-in-out md:translate-x-0
                     ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{
-          background: 'linear-gradient(180deg, rgba(14, 20, 35, 0.98), rgba(9, 13, 24, 0.96))',
+          background: 'var(--gradient-surface)',
           borderRight: '1px solid var(--color-border)',
           boxShadow: '20px 0 40px rgba(2, 6, 23, 0.26)',
         }}
@@ -113,8 +113,8 @@ export default function Sidebar() {
             <div
               className="rounded-2xl px-3 py-3 flex items-center gap-2.5"
               style={{
-                background: 'linear-gradient(135deg, rgba(255,122,24,0.14), rgba(255,191,71,0.08))',
-                border: '1px solid rgba(255,122,24,0.16)',
+                background: 'color-mix(in srgb, var(--color-accent-bg) 75%, var(--color-surface) 25%)',
+                border: '1px solid var(--color-border)',
               }}
             >
               <span className="text-xl">🔥</span>
