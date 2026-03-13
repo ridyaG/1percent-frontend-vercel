@@ -49,7 +49,7 @@ export default function LoginPage() {
               <Flame size={14} />
               Build consistency
             </div>
-            <h1 className="mb-4">Show up daily and make progress feel tangible.</h1>
+            <h1 className="type-hero mb-4">Show up daily and make progress feel tangible.</h1>
             <p className="section-copy text-base">
               Track your streaks, share wins, and stay connected to a community built around steady improvement.
             </p>
@@ -74,7 +74,7 @@ export default function LoginPage() {
             <Flame size={32} style={{ color: 'var(--color-accent)' }} />
           </div>
           <h1
-            className="text-4xl font-bold tracking-tight"
+            className="type-section font-bold tracking-tight"
             style={{
               fontFamily: "'Syne', sans-serif",
               color: 'var(--color-text)',
