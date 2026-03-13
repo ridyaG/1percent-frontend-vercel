@@ -4,7 +4,7 @@ import { notificationsApi } from '../api/notifications';
 import { getDefaultAvatar } from '../lib/utils';
 import { NOTIFICATION_ICONS } from '../lib/constants';
 import type { Notification } from '../types/notification';
-import { CheckCheck } from 'lucide-react';
+import { CheckCheck, Bell, Sparkles } from 'lucide-react';
 
 function NotifItem({ notif, onRead }: { notif: Notification; onRead: (id: string) => void }) {
   const actor = notif.actor;
@@ -30,18 +30,18 @@ function NotifItem({ notif, onRead }: { notif: Notification; onRead: (id: string
       onClick={() => !notif.isRead && onRead(notif.id)}
       className="flex items-start gap-3 px-5 py-4 transition-colors cursor-pointer"
       style={{
-        background: notif.isRead ? 'transparent' : 'var(--color-accent-bg)',
+        background: notif.isRead ? 'transparent' : 'color-mix(in srgb, var(--color-accent-bg) 72%, var(--color-surface) 28%)',
         borderBottom: '1px solid var(--color-border)',
       }}
       onMouseEnter={e => {
         (e.currentTarget as HTMLElement).style.background = notif.isRead
           ? 'var(--color-hover)'
-          : 'rgba(255,92,0,0.16)';
+          : 'color-mix(in srgb, var(--color-accent-bg) 82%, var(--color-surface) 18%)';
       }}
       onMouseLeave={e => {
         (e.currentTarget as HTMLElement).style.background = notif.isRead
           ? 'transparent'
-          : 'var(--color-accent-bg)';
+          : 'color-mix(in srgb, var(--color-accent-bg) 72%, var(--color-surface) 28%)';
       }}
     >
       {actor ? (
@@ -125,64 +125,120 @@ export default function NotificationsPage() {
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <div className="max-w-2xl mx-auto">
-      {/* ── Sticky header ── */}
+    <div className="page-container">
+      <section className="page-hero animate-fade-in">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <div className="eyebrow mb-3">
+              <Sparkles size={14} />
+              Signal center
+            </div>
+            <h2 className="type-section mb-2">Stay close to the moments that need your attention.</h2>
+            <p className="section-copy">
+              Track replies, follows, mentions, and milestones in one place so you can respond without losing momentum.
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="glass-panel px-4 py-4 min-w-[140px]">
+              <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
+                Unread
+              </div>
+              <div className="mt-1 text-2xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
+                {unreadCount}
+              </div>
+            </div>
+            <div className="glass-panel px-4 py-4 min-w-[140px]">
+              <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
+                Total
+              </div>
+              <div className="mt-1 text-2xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
+                {notifications.length}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div
-        className="flex items-center justify-between px-5 py-4 sticky top-[60px] z-10"
-        style={{
-          background: 'color-mix(in srgb, var(--color-bg) 90%, transparent)',
-          backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid var(--color-border)',
-        }}
+        className="card overflow-hidden"
+        style={{ borderRadius: 'calc(var(--radius-xl) + 4px)' }}
       >
-        <div className="flex items-center gap-2.5">
-          <h2
-            className="font-bold text-lg"
-            style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-text)' }}
-          >
-            Notifications
-          </h2>
-          {unreadCount > 0 && (
-            <span
-              className="text-xs font-bold px-2 py-0.5 rounded-full"
-              style={{ background: 'var(--color-accent)', color: '#fff' }}
+        <div
+          className="flex items-center justify-between gap-3 px-5 py-4"
+          style={{
+            background: 'color-mix(in srgb, var(--color-surface) 90%, transparent)',
+            borderBottom: '1px solid var(--color-border)',
+          }}
+        >
+          <div className="flex items-center gap-2.5">
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-2xl"
+              style={{ background: 'var(--color-accent-bg)', color: 'var(--color-accent)' }}
             >
-              {unreadCount}
-            </span>
+              <Bell size={18} />
+            </div>
+            <div>
+              <h2
+                className="section-title"
+                style={{ color: 'var(--color-text)' }}
+              >
+                Notifications
+              </h2>
+              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                Your latest activity, replies, follows, and reminders.
+              </p>
+            </div>
+          </div>
+
+          {unreadCount > 0 && (
+            <button
+              onClick={() => markAllRead()}
+              disabled={markingAll}
+              className="btn btn-ghost text-sm"
+            >
+              <CheckCheck size={15} />
+              {markingAll ? 'Marking...' : 'Mark all read'}
+            </button>
           )}
         </div>
 
-        {unreadCount > 0 && (
-          <button
-            onClick={() => markAllRead()}
-            disabled={markingAll}
-            className="flex items-center gap-1.5 text-xs font-semibold transition-colors disabled:opacity-50"
-            style={{ color: 'var(--color-accent)' }}
-          >
-            <CheckCheck size={14} />
-            {markingAll ? 'Marking...' : 'Mark all read'}
-          </button>
+        {isLoading ? (
+          <NotifSkeleton />
+        ) : notifications.length === 0 ? (
+          <div className="p-5">
+            <div
+              className="empty-state"
+              style={{
+                minHeight: '340px',
+                background:
+                  'radial-gradient(circle at top, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 24%), color-mix(in srgb, var(--color-surface) 92%, white 8%)',
+              }}
+            >
+              <div
+                className="mb-5 flex h-20 w-20 items-center justify-center rounded-[28px]"
+                style={{
+                  background: 'var(--color-accent-bg)',
+                  color: 'var(--color-accent)',
+                  boxShadow: '0 0 0 10px color-mix(in srgb, var(--color-accent) 8%, transparent)',
+                }}
+              >
+                <Bell size={34} />
+              </div>
+              <div className="empty-state-title">No notifications yet</div>
+              <div className="empty-state-desc">
+                Interact with the community to start seeing replies, follows, and milestone updates here.
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div>
+            {notifications.map((n) => (
+              <NotifItem key={n.id} notif={n} onRead={markRead} />
+            ))}
+          </div>
         )}
       </div>
-
-      {/* ── Content ── */}
-      {isLoading ? (
-        <NotifSkeleton />
-      ) : notifications.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-state-icon">🔔</div>
-          <div className="empty-state-title">No notifications yet</div>
-          <div className="empty-state-desc">
-            Interact with the community to start seeing updates here.
-          </div>
-        </div>
-      ) : (
-        <div>
-          {notifications.map((n) => (
-            <NotifItem key={n.id} notif={n} onRead={markRead} />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
