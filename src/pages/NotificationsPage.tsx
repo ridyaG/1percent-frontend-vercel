@@ -125,63 +125,80 @@ export default function NotificationsPage() {
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <div className="page-container">
-      <section className="page-hero animate-fade-in">
-        <div className="flex flex-col gap-6 xl:flex-row xl:items-stretch xl:justify-between">
-          <div className="max-w-[640px]">
-            <div className="eyebrow mb-3">
-              <Sparkles size={14} />
-              Signal center
-            </div>
-            <h2 className="type-section mb-2">Stay close to the moments that need your attention.</h2>
-            <p className="section-copy">
-              Track replies, follows, mentions, and milestones in one place so you can respond without losing momentum.
-            </p>
-          </div>
+    <div className="page-container relative">
+      <div
+        className="pointer-events-none absolute left-8 top-20 h-40 w-40 rounded-full blur-3xl animate-float-soft"
+        style={{ background: 'color-mix(in srgb, var(--color-accent) 14%, transparent)', opacity: 0.3 }}
+      />
+      <div
+        className="pointer-events-none absolute right-8 top-56 h-36 w-36 rounded-full blur-3xl animate-drift-sideways"
+        style={{ background: 'color-mix(in srgb, var(--color-secondary) 16%, transparent)', opacity: 0.18 }}
+      />
 
-          <div className="w-full xl:max-w-[360px]">
-            <div
-              className="glass-panel grid gap-3 p-3 sm:grid-cols-2"
-              style={{
-                background:
-                  'linear-gradient(135deg, color-mix(in srgb, var(--color-surface) 88%, white 12%), color-mix(in srgb, var(--color-accent-bg) 40%, var(--color-surface) 60%))',
-              }}
-            >
-              <div
-                className="rounded-[20px] px-4 py-4 min-w-0"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border)' }}
-              >
-                <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
-                  Unread
-                </div>
-                <div className="mt-1 text-3xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
-                  {unreadCount}
-                </div>
-                <div className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                  Waiting on your attention
-                </div>
-              </div>
-              <div
-                className="rounded-[20px] px-4 py-4 min-w-0"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border)' }}
-              >
-                <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
-                  Total
-                </div>
-                <div className="mt-1 text-3xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
-                  {notifications.length}
-                </div>
-                <div className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                  In your activity stream
-                </div>
-              </div>
+      <section className="page-hero animate-fade-in relative z-10">
+        <div className="max-w-[760px]">
+          <div className="eyebrow mb-3">
+            <Sparkles size={14} />
+            Signal center
+          </div>
+          <h2 className="type-section mb-2">Stay close to the moments that need your attention.</h2>
+          <p className="section-copy">
+            Track replies, follows, mentions, and milestones in one place so you can respond without losing momentum.
+          </p>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <div
+            className="glass-panel rounded-[20px] px-4 py-4 min-w-0"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border)' }}
+          >
+            <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
+              Unread
+            </div>
+            <div className="mt-1 text-3xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
+              {unreadCount}
+            </div>
+            <div className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              Waiting on your attention
+            </div>
+          </div>
+          <div
+            className="glass-panel rounded-[20px] px-4 py-4 min-w-0"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border)' }}
+          >
+            <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
+              Total
+            </div>
+            <div className="mt-1 text-3xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
+              {notifications.length}
+            </div>
+            <div className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              In your activity stream
+            </div>
+          </div>
+          <div
+            className="glass-panel rounded-[20px] px-4 py-4 min-w-0"
+            style={{
+              background:
+                'linear-gradient(135deg, color-mix(in srgb, var(--color-surface) 80%, white 20%), color-mix(in srgb, var(--color-accent-bg) 40%, var(--color-surface) 60%))',
+              border: '1px solid var(--color-border)',
+            }}
+          >
+            <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
+              Status
+            </div>
+            <div className="mt-1 text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+              {unreadCount > 0 ? 'Action needed' : 'All clear'}
+            </div>
+            <div className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              {unreadCount > 0 ? 'You have unread activity to review.' : 'Nothing urgent is waiting right now.'}
             </div>
           </div>
         </div>
       </section>
 
       <div
-        className="card overflow-hidden"
+        className="card overflow-hidden relative z-10 max-w-[980px] mx-auto"
         style={{ borderRadius: 'calc(var(--radius-xl) + 4px)' }}
       >
         <div
@@ -191,7 +208,7 @@ export default function NotificationsPage() {
             borderBottom: '1px solid var(--color-border)',
           }}
         >
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
             <div
               className="flex h-11 w-11 items-center justify-center rounded-2xl"
               style={{ background: 'var(--color-accent-bg)', color: 'var(--color-accent)' }}
@@ -208,6 +225,21 @@ export default function NotificationsPage() {
               <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
                 Your latest activity, replies, follows, and reminders.
               </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {['Replies', 'Mentions', 'Milestones'].map((chip) => (
+                  <span
+                    key={chip}
+                    className="rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em]"
+                    style={{
+                      background: 'color-mix(in srgb, var(--color-surface) 78%, white 22%)',
+                      color: 'var(--color-text-muted)',
+                      border: '1px solid var(--color-border)',
+                    }}
+                  >
+                    {chip}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -226,17 +258,19 @@ export default function NotificationsPage() {
         {isLoading ? (
           <NotifSkeleton />
         ) : notifications.length === 0 ? (
-          <div className="p-5">
+          <div className="p-5 md:p-6">
             <div
               className="empty-state"
               style={{
-                minHeight: '280px',
+                minHeight: '220px',
+                maxWidth: '760px',
+                margin: '0 auto',
                 background:
                   'radial-gradient(circle at top, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 24%), color-mix(in srgb, var(--color-surface) 92%, white 8%)',
               }}
             >
               <div
-                className="mb-5 flex h-18 w-18 items-center justify-center rounded-[24px]"
+                className="mb-5 flex h-[72px] w-[72px] items-center justify-center rounded-[24px] animate-float-soft"
                 style={{
                   background: 'var(--color-accent-bg)',
                   color: 'var(--color-accent)',
