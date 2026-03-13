@@ -215,23 +215,31 @@ export const themes: Record<ThemeName, ThemeColors & {
 // Helper to apply CSS variables
 function applyTheme(theme: ThemeColors) {
   const root = document.documentElement;
+  const surface2 = theme.card ?? theme.surface;
+  const surface3 = theme.surface;
+  const secondary = theme.textMuted;
+  const textSubtle = theme.textMuted;
 
   const vars = {
     '--color-bg': theme.bg,
     '--color-surface': theme.surface,
+    '--color-surface-2': surface2,
+    '--color-surface-3': surface3,
     '--color-border': theme.border,
 
     '--color-text': theme.text,
     '--color-text-muted': theme.textMuted,
+    '--color-text-subtle': textSubtle,
 
     '--color-accent': theme.accent,
     '--color-accent-hover': theme.accentHover,
     '--color-accent-text': theme.accentText,
 
     '--color-accent-bg': theme.accentBg,
-    '--color-accent-gradient': theme.accentGradient,
+    '--gradient-brand': theme.accentGradient,
+    '--gradient-surface': `linear-gradient(180deg, ${surface2} 0%, ${theme.surface} 100%)`,
+    '--color-secondary': secondary,
 
-    // New helpful variables (optional – use when needed)
     '--color-card': theme.card ?? theme.surface,
     '--color-hover': theme.hover ?? 'rgba(0,0,0,0.07)',
     '--color-active': theme.active ?? 'rgba(0,0,0,0.12)',
