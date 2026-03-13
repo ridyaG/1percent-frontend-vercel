@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import AnimatedCover from '../components/profile/AnimatedCover';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, MapPin, Globe, Target, Edit2, Users } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -282,10 +283,8 @@ export default function ProfilePage() {
   return (
     <div className="max-w-2xl mx-auto">
       {/* Cover */}
-      <div
-        className="h-36 relative"
-        style={{ background: 'linear-gradient(135deg, var(--color-accent-bg), var(--color-border))' }}
-      >
+      <div className="h-36 relative overflow-hidden">
+        <AnimatedCover className="absolute inset-0" />
         {user.coverUrl && (
           <img src={user.coverUrl} className="absolute inset-0 w-full h-full object-cover" alt="" />
         )}
