@@ -27,85 +27,111 @@ export default function Topbar() {
 
   return (
     <header
-      className="fixed top-0 right-0 left-0 md:left-[220px] h-[60px] flex items-center justify-between px-4 z-30"
+      className="fixed top-0 right-0 left-0 md:left-[220px] z-30"
       style={{
-        background: 'color-mix(in srgb, var(--color-bg) 85%, transparent)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        borderBottom: '1px solid var(--color-border)',
+        height: 'var(--topbar-height)',
+        background: 'color-mix(in srgb, var(--color-bg) 72%, transparent)',
+        backdropFilter: 'blur(18px)',
+        WebkitBackdropFilter: 'blur(18px)',
+        borderBottom: '1px solid rgba(169, 190, 255, 0.08)',
+        boxShadow: '0 10px 28px rgba(2, 6, 23, 0.18)',
       }}
     >
-      <div className="flex items-center gap-3">
-        {/* Hamburger – mobile only */}
-        <button
-          onClick={toggleSidebar}
-          className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg transition-colors"
-          style={{ color: 'var(--color-text-muted)' }}
-          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = 'var(--color-text)')}
-          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = 'var(--color-text-muted)')}
-          aria-label="Open menu"
-        >
-          <Menu size={20} />
-        </button>
-
-        <h1
-          className="text-base font-bold"
-          style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-text)' }}
-        >
-          {isMobile ? pageTitle : ''}
-        </h1>
-      </div>
-
-      <div className="flex items-center gap-1.5">
-        {/* Mobile compose shortcut */}
-        {isMobile && (
+      <div className="mx-auto flex h-full w-full max-w-[1180px] items-center justify-between gap-3 px-3 sm:px-5">
+        <div className="flex min-w-0 items-center gap-3">
           <button
-            onClick={openCompose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg"
-            style={{ background: 'var(--color-accent)', color: '#fff' }}
-            aria-label="New post"
-          >
-            <Plus size={16} />
-          </button>
-        )}
-
-        {/* Notifications */}
-        <button
-          onClick={() => navigate('/notifications')}
-          className="relative w-9 h-9 flex items-center justify-center rounded-lg transition-colors"
-          style={{ color: 'var(--color-text-muted)' }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLElement).style.color = 'var(--color-text)';
-            (e.currentTarget as HTMLElement).style.background = 'var(--color-hover)';
-          }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLElement).style.color = 'var(--color-text-muted)';
-            (e.currentTarget as HTMLElement).style.background = 'transparent';
-          }}
-          aria-label="Notifications"
-        >
-          <Bell size={18} />
-          {/* Unread dot */}
-          <span
-            className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full border-2"
+            onClick={toggleSidebar}
+            className="md:hidden flex items-center justify-center rounded-xl transition-colors"
             style={{
-              background: 'var(--color-accent)',
-              borderColor: 'var(--color-bg)',
+              width: 'var(--tap-target)',
+              height: 'var(--tap-target)',
+              color: 'var(--color-text)',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid var(--color-border)',
             }}
-          />
-        </button>
+            aria-label="Open menu"
+          >
+            <Menu size={20} />
+          </button>
 
-        {/* Avatar */}
-        <button
-          onClick={() => navigate('/profile')}
-          className="w-9 h-9 rounded-full overflow-hidden transition-all"
-          style={{ border: '2px solid var(--color-border)' }}
-          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'var(--color-accent)')}
-          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)')}
-          aria-label="Profile"
-        >
-          <img src={avatar} className="w-full h-full object-cover" alt="" />
-        </button>
+          <div className="min-w-0">
+            <div className="hidden md:block text-[11px] font-semibold uppercase tracking-[0.24em]" style={{ color: 'var(--color-secondary)' }}>
+              1% Better
+            </div>
+            <h1
+              className="truncate text-lg font-bold sm:text-xl"
+              style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-text)' }}
+            >
+              {pageTitle}
+            </h1>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-3">
+          {!isMobile && (
+            <button
+              onClick={openCompose}
+              className="btn btn-primary hidden sm:inline-flex"
+              aria-label="Create post"
+            >
+              <Plus size={16} />
+              New post
+            </button>
+          )}
+
+          {isMobile && (
+            <button
+              onClick={openCompose}
+              className="flex items-center justify-center rounded-xl"
+              style={{
+                width: 'var(--tap-target)',
+                height: 'var(--tap-target)',
+                background: 'var(--gradient-brand)',
+                color: '#fff',
+                boxShadow: 'var(--shadow-accent)',
+              }}
+              aria-label="New post"
+            >
+              <Plus size={18} />
+            </button>
+          )}
+
+          <button
+            onClick={() => navigate('/notifications')}
+            className="relative flex items-center justify-center rounded-xl transition-colors"
+            style={{
+              width: 'var(--tap-target)',
+              height: 'var(--tap-target)',
+              color: 'var(--color-text)',
+              background: location.pathname === '/notifications' ? 'var(--color-accent-bg)' : 'rgba(255,255,255,0.04)',
+              border: '1px solid var(--color-border)',
+            }}
+            aria-label="Notifications"
+          >
+            <Bell size={18} />
+            <span
+              className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full border-2"
+              style={{
+                background: 'var(--color-accent)',
+                borderColor: 'var(--color-bg)',
+              }}
+            />
+          </button>
+
+          <button
+            onClick={() => navigate('/profile')}
+            className="overflow-hidden rounded-full transition-all"
+            style={{
+              width: 'var(--tap-target)',
+              height: 'var(--tap-target)',
+              border: location.pathname === '/profile' ? '2px solid var(--color-accent)' : '2px solid var(--color-border)',
+              boxShadow: location.pathname === '/profile' ? '0 0 0 4px rgba(255,122,24,0.12)' : 'none',
+            }}
+            aria-label="Profile"
+          >
+            <img src={avatar} className="h-full w-full object-cover" alt="" />
+          </button>
+        </div>
       </div>
     </header>
   );
