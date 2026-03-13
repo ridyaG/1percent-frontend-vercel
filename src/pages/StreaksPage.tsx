@@ -3,25 +3,35 @@ import { useAuthStore } from '../store/authStore';
 import { getDefaultAvatar, getStreakBadgeClass, getStreakLabel } from '../lib/utils';
 import { usersApi } from '../api/users';
 import type { User } from '../types/user';
+import { TrendingUp } from 'lucide-react';
 
 function CompoundCard() {
   return (
     <div
-      className="rounded-2xl p-6 text-center relative overflow-hidden"
-      style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+      className="card rounded-2xl p-6 text-center relative overflow-hidden"
+      style={{ borderRadius: 'var(--radius-xl)' }}
     >
       <div
-        className="absolute inset-0 opacity-5"
+        className="absolute inset-0 opacity-5 pointer-events-none"
         style={{ background: 'var(--color-accent-gradient)' }}
       />
       <div className="relative">
-        <div className="text-6xl font-bold font-display" style={{ color: 'var(--color-accent)' }}>
+        <TrendingUp size={20} className="mx-auto mb-3" style={{ color: 'var(--color-accent)' }} />
+        <div
+          className="text-5xl font-bold"
+          style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-accent)' }}
+        >
           37×
         </div>
         <div className="text-sm mt-2" style={{ color: 'var(--color-text-muted)' }}>
-          Better in one year at 1% daily growth
+          Better in one year at 1% daily
         </div>
-        <div className="text-xs mt-3 opacity-50 font-mono">(1.01)^365 = 37.78</div>
+        <div
+          className="text-xs mt-3 font-mono px-3 py-1.5 rounded-lg inline-block"
+          style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-subtle)' }}
+        >
+          (1.01)^365 = 37.78
+        </div>
       </div>
     </div>
   );
@@ -32,27 +42,33 @@ function MyStreakCard({ streak, longestStreak, avatar, username }: {
 }) {
   return (
     <div
-      className="rounded-2xl p-6 text-center"
-      style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+      className="card rounded-2xl p-6 text-center"
+      style={{ borderRadius: 'var(--radius-xl)' }}
     >
       <img
         src={avatar}
-        className="w-16 h-16 rounded-full mx-auto mb-3"
-        style={{ border: '2px solid var(--color-accent)' }}
+        className="w-14 h-14 rounded-full mx-auto mb-3 object-cover"
+        style={{ border: '2px solid var(--color-accent)', boxShadow: '0 0 16px var(--color-accent-glow)' }}
         alt={username}
       />
-      <div className="text-xs font-bold tracking-[3px] mb-1" style={{ color: 'var(--color-text-muted)' }}>
-        YOUR STREAK
+      <div
+        className="text-xs font-bold tracking-[3px] mb-1 uppercase"
+        style={{ color: 'var(--color-text-muted)' }}
+      >
+        Your Streak
       </div>
-      <div className="text-5xl font-bold font-display" style={{ color: 'var(--color-accent)' }}>
+      <div
+        className="text-5xl font-bold"
+        style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-accent)' }}
+      >
         {streak}
       </div>
       <div className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
-        Days consecutive 🔥
+        {streak === 1 ? 'day' : 'days'} consecutive 🔥
       </div>
       {longestStreak > 0 && (
-        <div className="text-xs mt-3" style={{ color: 'var(--color-text-muted)', opacity: 0.6 }}>
-          Personal best: {longestStreak} days
+        <div className="text-xs mt-3" style={{ color: 'var(--color-text-subtle)' }}>
+          Personal best: <strong style={{ color: 'var(--color-text-muted)' }}>{longestStreak} days</strong>
         </div>
       )}
     </div>
@@ -61,23 +77,32 @@ function MyStreakCard({ streak, longestStreak, avatar, username }: {
 
 function LeaderRow({ user, rank }: { user: User; rank: number }) {
   const medals = ['🥇', '🥈', '🥉'];
+  const isTop3 = rank <= 3;
+
   return (
     <div
       className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors"
       style={{
-        background: rank <= 3 ? 'var(--color-accent-bg)' : 'transparent',
-        border: `1px solid ${rank <= 3 ? 'var(--color-accent-bg)' : 'transparent'}`,
+        background: isTop3 ? 'var(--color-accent-bg)' : 'transparent',
+        border: `1px solid ${isTop3 ? 'rgba(255,92,0,0.15)' : 'transparent'}`,
+        marginBottom: 2,
+      }}
+      onMouseEnter={e => {
+        if (!isTop3) (e.currentTarget as HTMLElement).style.background = 'var(--color-hover)';
+      }}
+      onMouseLeave={e => {
+        if (!isTop3) (e.currentTarget as HTMLElement).style.background = 'transparent';
       }}
     >
       <span
         className="w-7 text-center text-sm font-bold shrink-0"
-        style={{ color: rank <= 3 ? 'var(--color-accent)' : 'var(--color-text-muted)' }}
+        style={{ color: isTop3 ? 'var(--color-accent)' : 'var(--color-text-subtle)' }}
       >
         {medals[rank - 1] ?? rank}
       </span>
       <img
         src={user.avatarUrl || getDefaultAvatar(user.username)}
-        className="w-9 h-9 rounded-full shrink-0"
+        className="avatar avatar-md"
         alt={user.displayName}
       />
       <div className="flex-1 min-w-0">
@@ -88,9 +113,7 @@ function LeaderRow({ user, rank }: { user: User; rank: number }) {
           @{user.username}
         </div>
       </div>
-      <span
-        className={`text-xs font-bold px-2.5 py-1 rounded-full border ${getStreakBadgeClass(user.currentStreak)}`}
-      >
+      <span className={`badge ${getStreakBadgeClass(user.currentStreak)}`}>
         {getStreakLabel(user.currentStreak)}
       </span>
     </div>
@@ -98,10 +121,10 @@ function LeaderRow({ user, rank }: { user: User; rank: number }) {
 }
 
 export default function StreaksPage() {
-  const user = useAuthStore(s => s.user);
-  const streak = user?.currentStreak || 0;
-  const longestStreak = 0; // Will come from full profile fetch
-  const avatar = user?.avatarUrl || getDefaultAvatar(user?.username || 'user');
+  const user         = useAuthStore(s => s.user);
+  const streak       = user?.currentStreak || 0;
+  const longestStreak = 0;
+  const avatar       = user?.avatarUrl || getDefaultAvatar(user?.username || 'user');
 
   const { data: leaders = [], isLoading } = useQuery<User[]>({
     queryKey: ['leaderboard'],
@@ -109,13 +132,12 @@ export default function StreaksPage() {
     staleTime: 1000 * 60 * 5,
   });
 
-  // Sort by streak descending
   const sorted = [...leaders].sort((a, b) => (b.currentStreak || 0) - (a.currentStreak || 0));
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      {/* Top stats */}
-      <div className="grid md:grid-cols-2 gap-4 mb-8">
+    <div className="page-container">
+      {/* ── Top stats ── */}
+      <div className="grid md:grid-cols-2 gap-4 mb-6">
         <CompoundCard />
         <MyStreakCard
           streak={streak}
@@ -125,49 +147,48 @@ export default function StreaksPage() {
         />
       </div>
 
-      {/* Leaderboard */}
+      {/* ── Leaderboard ── */}
       <div
-        className="rounded-2xl overflow-hidden"
-        style={{ border: '1px solid var(--color-border)' }}
+        className="card overflow-hidden"
+        style={{ borderRadius: 'var(--radius-xl)' }}
       >
         <div
-          className="flex items-center justify-between px-5 py-4"
-          style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
+          className="px-5 py-4"
+          style={{ borderBottom: '1px solid var(--color-border)' }}
         >
-          <h2 className="font-bold" style={{ color: 'var(--color-text)' }}>
+          <h2
+            className="font-bold text-sm uppercase tracking-wider"
+            style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-text)' }}
+          >
             🔥 Community Streak Leaders
           </h2>
         </div>
 
-        <div
-          className="divide-y"
-          style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-        >
+        <div className="p-4">
           {isLoading ? (
-            <div className="space-y-2 p-4">
+            <div className="space-y-2">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex items-center gap-3 py-2 animate-pulse">
-                  <div className="w-7 h-5 rounded" style={{ background: 'var(--color-border)' }} />
-                  <div className="w-9 h-9 rounded-full" style={{ background: 'var(--color-border)' }} />
+                <div key={i} className="flex items-center gap-3 py-2">
+                  <div className="skeleton w-7 h-5 rounded" />
+                  <div className="skeleton w-9 h-9 rounded-full" />
                   <div className="flex-1 space-y-1">
-                    <div className="h-3 w-28 rounded" style={{ background: 'var(--color-border)' }} />
-                    <div className="h-2 w-16 rounded" style={{ background: 'var(--color-border)' }} />
+                    <div className="skeleton h-3 w-28" />
+                    <div className="skeleton h-2 w-16" />
                   </div>
-                  <div className="h-6 w-20 rounded-full" style={{ background: 'var(--color-border)' }} />
+                  <div className="skeleton h-6 w-20 rounded-full" />
                 </div>
               ))}
             </div>
           ) : sorted.length === 0 ? (
-            <div className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
-              <div className="text-4xl mb-3">🔥</div>
-              <div>No streak data yet — start posting daily!</div>
+            <div className="empty-state">
+              <div className="empty-state-icon">🔥</div>
+              <div className="empty-state-title">No streak data yet</div>
+              <div className="empty-state-desc">Start posting daily to appear on the leaderboard!</div>
             </div>
           ) : (
-            <div className="p-4 space-y-1">
-              {sorted.map((u, i) => (
-                <LeaderRow key={u.id} user={u} rank={i + 1} />
-              ))}
-            </div>
+            sorted.map((u, i) => (
+              <LeaderRow key={u.id} user={u} rank={i + 1} />
+            ))
           )}
         </div>
       </div>
