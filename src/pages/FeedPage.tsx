@@ -57,13 +57,40 @@ export default function FeedPage() {
 
   return (
     <div className="page-container">
-      {/* ── Streak alert ── */}
+      <section className="page-hero animate-fade-in">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="eyebrow mb-3">
+              <Flame size={14} />
+              Daily momentum
+            </div>
+            <h2 className="mb-2">Keep your momentum visible.</h2>
+            <p className="section-copy">
+              Share small wins, track consistency, and make progress feel rewarding every time you open the feed.
+            </p>
+          </div>
+
+          <div className="glass-panel flex items-center gap-3 self-start px-4 py-3 sm:self-auto">
+            <img src={avatar} className="avatar avatar-md" alt="" />
+            <div>
+              <div className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
+                Today&apos;s check-in
+              </div>
+              <div className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                One small improvement counts.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {streak > 0 && (
         <div
-          className="flex items-center gap-3 rounded-xl px-4 py-3 mb-4"
+          className="mb-4 flex items-center gap-3 rounded-2xl px-4 py-4"
           style={{
-            background: 'var(--color-accent-bg)',
-            border: '1px solid rgba(255,92,0,0.2)',
+            background: 'linear-gradient(135deg, rgba(255,122,24,0.16), rgba(255,191,71,0.08))',
+            border: '1px solid rgba(255,122,24,0.18)',
+            boxShadow: 'var(--shadow-sm)',
           }}
         >
           <Flame size={18} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
@@ -78,37 +105,36 @@ export default function FeedPage() {
         </div>
       )}
 
-      {/* ── Compose prompt ── */}
       <button
         onClick={openCompose}
-        className="w-full flex items-center gap-3 rounded-2xl p-4 mb-5 text-left transition-all"
+        className="w-full flex items-center gap-3 rounded-[24px] p-4 mb-5 text-left transition-all"
         style={{
-          background: 'var(--color-surface)',
+          background:
+            'linear-gradient(180deg, rgba(18,25,41,0.96), rgba(10,15,27,0.96))',
           border: '1px solid var(--color-border)',
-        }}
-        onMouseEnter={e => {
-          (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border-hover)';
-        }}
-        onMouseLeave={e => {
-          (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)';
+          boxShadow: 'var(--shadow-md)',
         }}
       >
         <img src={avatar} className="avatar avatar-md" alt="" />
+        <div className="flex-1">
+          <div className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
+            Share a win
+          </div>
+          <span
+            className="block text-sm"
+            style={{ color: 'var(--color-text-subtle)' }}
+          >
+            What did you improve today?
+          </span>
+        </div>
         <span
-          className="flex-1 text-sm"
-          style={{ color: 'var(--color-text-subtle)' }}
-        >
-          What did you improve today?
-        </span>
-        <span
-          className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg shrink-0"
-          style={{ background: 'var(--color-accent)', color: '#fff' }}
+          className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-xl shrink-0"
+          style={{ background: 'var(--gradient-brand)', color: '#fff', minHeight: '40px' }}
         >
           <Pencil size={12} /> Post
         </span>
       </button>
 
-      {/* ── Feed ── */}
       {isLoading ? (
         <FeedSkeleton />
       ) : posts.length === 0 ? (
@@ -118,10 +144,7 @@ export default function FeedPage() {
           <div className="empty-state-desc mb-4">
             Follow people or share your first win to get started!
           </div>
-          <button
-            onClick={openCompose}
-            className="btn btn-primary"
-          >
+          <button onClick={openCompose} className="btn btn-primary">
             Create Your First Post 🔥
           </button>
         </div>
