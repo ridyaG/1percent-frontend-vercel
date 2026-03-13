@@ -283,7 +283,7 @@ export default function ProfilePage() {
   return (
     <div className="max-w-2xl mx-auto">
       {/* Cover */}
-      <div className="h-36 relative overflow-hidden">
+      <div className="h-52 relative overflow-hidden">
         <AnimatedCover className="absolute inset-0" />
         {user.coverUrl && (
           <img src={user.coverUrl} className="absolute inset-0 w-full h-full object-cover" alt="" />
