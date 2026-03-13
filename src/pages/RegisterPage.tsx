@@ -87,7 +87,7 @@ export default function RegisterPage() {
               <Flame size={14} />
               Join the habit loop
             </div>
-            <h1 className="mb-4">Turn small wins into a system you want to keep using.</h1>
+            <h1 className="type-hero mb-4">Turn small wins into a system you want to keep using.</h1>
             <p className="section-copy text-base">
               Create your account, define a focus, and start building visible momentum one day at a time.
             </p>
@@ -113,7 +113,7 @@ export default function RegisterPage() {
             <Flame size={28} style={{ color: 'var(--color-accent)' }} />
           </div>
           <h1
-            className="text-3xl font-bold"
+            className="type-section font-bold"
             style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-text)' }}
           >
             Start your journey
