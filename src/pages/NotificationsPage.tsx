@@ -4,25 +4,26 @@ import { notificationsApi } from '../api/notifications';
 import { getDefaultAvatar } from '../lib/utils';
 import { NOTIFICATION_ICONS } from '../lib/constants';
 import type { Notification } from '../types/notification';
+import { CheckCheck } from 'lucide-react';
 
 function NotifItem({ notif, onRead }: { notif: Notification; onRead: (id: string) => void }) {
   const actor = notif.actor;
-  const icon = NOTIFICATION_ICONS[notif.type] || '🔔';
-  const time = formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true });
+  const icon  = NOTIFICATION_ICONS[notif.type] || '🔔';
+  const time  = formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true });
 
-  const label = {
+  const label: Record<string, string> = {
     like:             'liked your post',
     comment:          'commented on your post',
     reply:            'replied to your comment',
     follow:           'started following you',
     follow_request:   'sent you a follow request',
     mention:          'mentioned you in a post',
-    streak_milestone: 'streak milestone reached!',
+    streak_milestone: 'reached a streak milestone!',
     streak_reminder:  "don't forget to post today!",
     badge_earned:     'you earned a new badge!',
     post_milestone:   'your post hit a milestone!',
     challenge_invite: 'invited you to a challenge',
-  }[notif.type] ?? notif.type;
+  };
 
   return (
     <div
@@ -32,18 +33,27 @@ function NotifItem({ notif, onRead }: { notif: Notification; onRead: (id: string
         background: notif.isRead ? 'transparent' : 'var(--color-accent-bg)',
         borderBottom: '1px solid var(--color-border)',
       }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLElement).style.background = notif.isRead
+          ? 'var(--color-hover)'
+          : 'rgba(255,92,0,0.16)';
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLElement).style.background = notif.isRead
+          ? 'transparent'
+          : 'var(--color-accent-bg)';
+      }}
     >
-      {/* Avatar or icon */}
       {actor ? (
         <img
           src={actor.avatarUrl || getDefaultAvatar(actor.username)}
-          className="w-10 h-10 rounded-full shrink-0 mt-0.5"
+          className="avatar avatar-md shrink-0 mt-0.5"
           alt={actor.displayName}
         />
       ) : (
         <div
           className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-lg"
-          style={{ background: 'var(--color-surface)' }}
+          style={{ background: 'var(--color-surface-2)' }}
         >
           {icon}
         </div>
@@ -54,9 +64,13 @@ function NotifItem({ notif, onRead }: { notif: Notification; onRead: (id: string
           {actor && (
             <span className="font-semibold">{actor.displayName} </span>
           )}
-          {label}
+          <span style={{ color: 'var(--color-text-muted)' }}>
+            {label[notif.type] ?? notif.type}
+          </span>
         </p>
-        <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>{time}</p>
+        <p className="text-xs mt-1" style={{ color: 'var(--color-text-subtle)' }}>
+          {time}
+        </p>
       </div>
 
       {!notif.isRead && (
@@ -65,6 +79,26 @@ function NotifItem({ notif, onRead }: { notif: Notification; onRead: (id: string
           style={{ background: 'var(--color-accent)' }}
         />
       )}
+    </div>
+  );
+}
+
+function NotifSkeleton() {
+  return (
+    <div>
+      {[...Array(5)].map((_, i) => (
+        <div
+          key={i}
+          className="flex items-start gap-3 px-5 py-4"
+          style={{ borderBottom: '1px solid var(--color-border)' }}
+        >
+          <div className="skeleton w-10 h-10 rounded-full shrink-0" />
+          <div className="flex-1 space-y-2 pt-1">
+            <div className="skeleton h-3 w-2/3" />
+            <div className="skeleton h-2 w-1/4" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -88,61 +122,63 @@ export default function NotificationsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
   });
 
-  const hasUnread = notifications.some(n => !n.isRead);
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Header */}
+      {/* ── Sticky header ── */}
       <div
-        className="flex items-center justify-between px-5 py-4 sticky top-[60px] z-10 backdrop-blur-md"
+        className="flex items-center justify-between px-5 py-4 sticky top-[60px] z-10"
         style={{
-          background: 'color-mix(in srgb, var(--color-bg) 85%, transparent)',
+          background: 'color-mix(in srgb, var(--color-bg) 90%, transparent)',
+          backdropFilter: 'blur(12px)',
           borderBottom: '1px solid var(--color-border)',
         }}
       >
-        <h2 className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>
-          Notifications
-        </h2>
-        {hasUnread && (
+        <div className="flex items-center gap-2.5">
+          <h2
+            className="font-bold text-lg"
+            style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-text)' }}
+          >
+            Notifications
+          </h2>
+          {unreadCount > 0 && (
+            <span
+              className="text-xs font-bold px-2 py-0.5 rounded-full"
+              style={{ background: 'var(--color-accent)', color: '#fff' }}
+            >
+              {unreadCount}
+            </span>
+          )}
+        </div>
+
+        {unreadCount > 0 && (
           <button
             onClick={() => markAllRead()}
             disabled={markingAll}
-            className="text-xs font-semibold transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 text-xs font-semibold transition-colors disabled:opacity-50"
             style={{ color: 'var(--color-accent)' }}
           >
+            <CheckCheck size={14} />
             {markingAll ? 'Marking...' : 'Mark all read'}
           </button>
         )}
       </div>
 
-      {/* List */}
+      {/* ── Content ── */}
       {isLoading ? (
-        <div className="space-y-0">
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="flex items-start gap-3 px-5 py-4 animate-pulse"
-              style={{ borderBottom: '1px solid var(--color-border)' }}
-            >
-              <div className="w-10 h-10 rounded-full shrink-0" style={{ background: 'var(--color-border)' }} />
-              <div className="flex-1 space-y-2 pt-1">
-                <div className="h-3 w-2/3 rounded" style={{ background: 'var(--color-border)' }} />
-                <div className="h-2 w-1/4 rounded" style={{ background: 'var(--color-border)' }} />
-              </div>
-            </div>
-          ))}
-        </div>
+        <NotifSkeleton />
       ) : notifications.length === 0 ? (
-        <div className="text-center py-20" style={{ color: 'var(--color-text-muted)' }}>
-          <div className="text-5xl mb-4">🔔</div>
-          <div className="font-semibold">No notifications yet</div>
-          <div className="text-sm mt-2 opacity-60">
-            Interact with the community to see updates here
+        <div className="empty-state">
+          <div className="empty-state-icon">🔔</div>
+          <div className="empty-state-title">No notifications yet</div>
+          <div className="empty-state-desc">
+            Interact with the community to start seeing updates here.
           </div>
         </div>
       ) : (
         <div>
-          {notifications.map(n => (
+          {notifications.map((n) => (
             <NotifItem key={n.id} notif={n} onRead={markRead} />
           ))}
         </div>
