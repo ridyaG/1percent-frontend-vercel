@@ -3,6 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '../store/authStore';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useLocation } from 'react-router-dom';
 
 interface Notification {
   actor?: {
@@ -11,28 +12,94 @@ interface Notification {
   type: string;
 }
 
+interface NewMessagePayload {
+  conversationId: string;
+  message: {
+    content: string;
+    sender: {
+      displayName: string;
+    };
+  };
+}
+
+let sharedSocket: Socket | null = null;
+let listenersAttached = false;
+let latestPathname = '';
+let latestSearch = '';
+let latestUserId = '';
+
+function disconnectSharedSocket() {
+  if (sharedSocket) {
+    sharedSocket.disconnect();
+    sharedSocket = null;
+    listenersAttached = false;
+  }
+}
+
 export function useSocket() {
   const user = useAuthStore((s) => s.user);
+  const userId = user?.id;
   const socketRef = useRef<Socket | null>(null);
   const queryClient = useQueryClient();
+  const location = useLocation();
 
   useEffect(() => {
-    if (!user) return;
+    latestPathname = location.pathname;
+    latestSearch = location.search;
+  }, [location.pathname, location.search]);
 
-    const socket = io(import.meta.env.VITE_WS_URL || 'http://localhost:3001');
-    socketRef.current = socket;
+  useEffect(() => {
+    if (!userId) {
+      latestUserId = '';
+      disconnectSharedSocket();
+      socketRef.current = null;
+      return;
+    }
 
-    socket.on('connect', () => {
-      socket.emit('join_room', { userId: user.id });
-    });
+    latestUserId = userId;
 
-    socket.on('notification', (notif: Notification) => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      toast(`${notif.actor?.displayName || ''} ${notif.type}`, { icon: '🔔' });
-    });
+    if (!sharedSocket) {
+      sharedSocket = io(import.meta.env.VITE_WS_URL || 'http://localhost:3001');
+    }
 
-    return () => { socket.disconnect(); };
-  }, [user?.id]);
+    socketRef.current = sharedSocket;
+
+    if (!listenersAttached) {
+      sharedSocket.on('connect', () => {
+        if (latestUserId) {
+          sharedSocket?.emit('join_room', { userId: latestUserId });
+        }
+      });
+
+      sharedSocket.on('notification', (notif: Notification) => {
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
+        queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+        if (notif.type !== 'message') {
+          toast(`${notif.actor?.displayName || ''} ${notif.type}`, { icon: '🔔' });
+        }
+      });
+
+      sharedSocket.on('new_message', ({ conversationId, message }: NewMessagePayload) => {
+        queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+        queryClient.invalidateQueries({ queryKey: ['conversations'] });
+
+        const activeConversationId = new URLSearchParams(latestSearch).get('conversationId');
+        const isViewingConversation = latestPathname === '/chat' && activeConversationId === conversationId;
+
+        if (!isViewingConversation) {
+          toast(`${message.sender.displayName}: ${message.content.slice(0, 40)}`, { icon: '💬' });
+        }
+      });
+
+      listenersAttached = true;
+    }
+
+    if (sharedSocket.connected) {
+      sharedSocket.emit('join_room', { userId });
+    }
+
+    return undefined;
+  }, [queryClient, userId]);
 
   return socketRef;
 }
