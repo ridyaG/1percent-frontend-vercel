@@ -1,15 +1,3 @@
-/**
- * FireCanvas — port of the CodePen spark/fire animation.
- *
- * Reads --color-accent from CSS variables so it matches every theme
- * (orange for Night, purple for Dusk, yellow for Morning, etc.)
- *
- * Props
- *   opacity     overall canvas opacity  (default 1)
- *   sparkFreq   sparks spawned per frame (default 2)
- *   floorFrac   0-1 fraction from bottom where fire floor sits (default 0.08)
- */
-
 import { useEffect, useRef } from 'react';
 
 interface Props {
