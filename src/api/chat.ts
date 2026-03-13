@@ -41,4 +41,13 @@ export const chatApi = {
 
   sendMessage: (conversationId: string, content: string) =>
     api.post<{ success: boolean; data: DirectMessage }>(`/chat/conversations/${conversationId}/messages`, { content }).then(r => r.data.data),
+
+  updateMessage: (conversationId: string, messageId: string, content: string) =>
+    api.patch<{ success: boolean; data: DirectMessage }>(`/chat/conversations/${conversationId}/messages/${messageId}`, { content }).then(r => r.data.data),
+
+  deleteMessage: (conversationId: string, messageId: string) =>
+    api.delete(`/chat/conversations/${conversationId}/messages/${messageId}`),
+
+  deleteConversation: (conversationId: string) =>
+    api.delete(`/chat/conversations/${conversationId}`),
 };
