@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import AnimatedCover from '../components/profile/AnimatedCover';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, MapPin, Globe, Target, Edit2, Users } from 'lucide-react';
@@ -272,6 +272,9 @@ export default function ProfilePage() {
   });
 
   const user = profile || authUser;
+
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
   if (!user) return null;
 
   const streak = user.currentStreak || 0;
