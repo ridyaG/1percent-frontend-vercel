@@ -12,49 +12,50 @@ const items = [
 export default function BottomNav() {
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 flex justify-around items-center z-50 md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
       style={{
-        background: 'color-mix(in srgb, var(--color-surface) 95%, transparent)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        borderTop: '1px solid var(--color-border)',
+        background: 'color-mix(in srgb, var(--color-bg) 74%, transparent)',
+        backdropFilter: 'blur(18px)',
+        WebkitBackdropFilter: 'blur(18px)',
+        borderTop: '1px solid rgba(169, 190, 255, 0.08)',
         paddingBottom: 'env(safe-area-inset-bottom)',
-        height: '62px',
+        boxShadow: '0 -12px 32px rgba(2, 6, 23, 0.28)',
       }}
     >
-      {items.map(({ to, icon: Icon, label }) => (
-        <NavLink key={to} to={to} end={to === '/'}>
-          {({ isActive }) => (
-            <span
-              className="flex flex-col items-center justify-center gap-0.5 px-4 py-1.5"
-              style={{
-                color: isActive ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                minWidth: 48,
-              }}
-            >
-              <Icon
-                size={20}
-                strokeWidth={isActive ? 2.5 : 1.8}
-                style={{
-                  filter: isActive ? 'drop-shadow(0 0 6px var(--color-accent-glow))' : undefined,
-                }}
-              />
+      <div className="mx-auto flex h-[var(--bottom-nav-height)] max-w-[640px] items-center justify-around gap-1 px-2">
+        {items.map(({ to, icon: Icon, label }) => (
+          <NavLink key={to} to={to} end={to === '/'}>
+            {({ isActive }) => (
               <span
-                className="text-[10px] font-semibold"
-                style={{ opacity: isActive ? 1 : 0.7 }}
+                className="relative flex min-w-[64px] flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2"
+                style={{
+                  color: isActive ? 'var(--color-text)' : 'var(--color-text-muted)',
+                  background: isActive ? 'linear-gradient(180deg, rgba(255,122,24,0.2), rgba(255,179,71,0.08))' : 'transparent',
+                  minHeight: '52px',
+                }}
               >
-                {label}
-              </span>
-              {isActive && (
-                <span
-                  className="absolute bottom-0 w-6 h-0.5 rounded-full"
-                  style={{ background: 'var(--color-accent)' }}
+                <Icon
+                  size={20}
+                  strokeWidth={isActive ? 2.4 : 1.9}
+                  style={{
+                    color: isActive ? 'var(--color-accent)' : 'currentColor',
+                    filter: isActive ? 'drop-shadow(0 0 8px var(--color-accent-glow))' : undefined,
+                  }}
                 />
-              )}
-            </span>
-          )}
-        </NavLink>
-      ))}
+                <span className="text-[10px] font-semibold tracking-[0.03em]">
+                  {label}
+                </span>
+                {isActive && (
+                  <span
+                    className="absolute top-1.5 h-1.5 w-1.5 rounded-full"
+                    style={{ background: 'var(--color-accent)' }}
+                  />
+                )}
+              </span>
+            )}
+          </NavLink>
+        ))}
+      </div>
     </nav>
   );
 }
