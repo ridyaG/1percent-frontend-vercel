@@ -70,24 +70,44 @@ export default function RegisterPage() {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: 'var(--color-bg)' }}
+      style={{ background: 'transparent' }}
     >
       <div
         className="pointer-events-none fixed inset-0"
         style={{
           background:
-            'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,92,0,0.08) 0%, transparent 70%)',
+            'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,122,24,0.1) 0%, transparent 70%)',
         }}
       />
 
-      <div className="w-full max-w-sm relative animate-fade-in">
-        {/* Logo */}
+      <div className="w-full max-w-[960px] relative animate-fade-in">
+        <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="hidden lg:block pr-6">
+            <div className="eyebrow mb-4">
+              <Flame size={14} />
+              Join the habit loop
+            </div>
+            <h1 className="mb-4">Turn small wins into a system you want to keep using.</h1>
+            <p className="section-copy text-base">
+              Create your account, define a focus, and start building visible momentum one day at a time.
+            </p>
+            <div className="mt-8 space-y-3">
+              {['Create a clear identity', 'Share progress with the community', 'Build streaks that reinforce the habit'].map((item) => (
+                <div key={item} className="glass-panel flex items-center gap-3 px-4 py-4 text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+                  <Check size={16} style={{ color: 'var(--color-secondary)' }} />
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="w-full max-w-sm justify-self-center">
         <div className="text-center mb-8">
           <div
             className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
             style={{
               background: 'var(--color-accent-bg)',
-              border: '1px solid rgba(255,92,0,0.25)',
+              border: '1px solid rgba(255,122,24,0.25)',
             }}
           >
             <Flame size={28} style={{ color: 'var(--color-accent)' }} />
@@ -106,13 +126,13 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* Card */}
         <div
           className="rounded-2xl p-7"
           style={{
-            background: 'var(--color-surface)',
+            background: 'var(--gradient-surface)',
             border: '1px solid var(--color-border)',
-            boxShadow: '0 8px 40px rgba(0,0,0,0.4)',
+            boxShadow: 'var(--shadow-lg)',
+            backdropFilter: 'blur(16px)',
           }}
         >
           {error && (
@@ -181,8 +201,8 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2"
-                  style={{ color: 'var(--color-text-muted)' }}
+                  className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-xl"
+                  style={{ color: 'var(--color-text-muted)', width: '36px', height: '36px' }}
                 >
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -222,6 +242,8 @@ export default function RegisterPage() {
             Log in
           </Link>
         </p>
+          </div>
+        </div>
       </div>
     </div>
   );
