@@ -127,8 +127,8 @@ export default function NotificationsPage() {
   return (
     <div className="page-container">
       <section className="page-hero animate-fade-in">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div>
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-stretch xl:justify-between">
+          <div className="max-w-[640px]">
             <div className="eyebrow mb-3">
               <Sparkles size={14} />
               Signal center
@@ -139,22 +139,40 @@ export default function NotificationsPage() {
             </p>
           </div>
 
-          <div className="w-full max-w-[320px]">
-            <div className="grid gap-3 grid-cols-2">
-              <div className="glass-panel px-4 py-4 min-w-0">
+          <div className="w-full xl:max-w-[360px]">
+            <div
+              className="glass-panel grid gap-3 p-3 sm:grid-cols-2"
+              style={{
+                background:
+                  'linear-gradient(135deg, color-mix(in srgb, var(--color-surface) 88%, white 12%), color-mix(in srgb, var(--color-accent-bg) 40%, var(--color-surface) 60%))',
+              }}
+            >
+              <div
+                className="rounded-[20px] px-4 py-4 min-w-0"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border)' }}
+              >
                 <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
                   Unread
                 </div>
-                <div className="mt-1 text-2xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
+                <div className="mt-1 text-3xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
                   {unreadCount}
                 </div>
+                <div className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                  Waiting on your attention
+                </div>
               </div>
-              <div className="glass-panel px-4 py-4 min-w-0">
+              <div
+                className="rounded-[20px] px-4 py-4 min-w-0"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border)' }}
+              >
                 <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
                   Total
                 </div>
-                <div className="mt-1 text-2xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
+                <div className="mt-1 text-3xl font-bold" style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}>
                   {notifications.length}
+                </div>
+                <div className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                  In your activity stream
                 </div>
               </div>
             </div>
@@ -212,24 +230,39 @@ export default function NotificationsPage() {
             <div
               className="empty-state"
               style={{
-                minHeight: '340px',
+                minHeight: '280px',
                 background:
                   'radial-gradient(circle at top, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 24%), color-mix(in srgb, var(--color-surface) 92%, white 8%)',
               }}
             >
               <div
-                className="mb-5 flex h-20 w-20 items-center justify-center rounded-[28px]"
+                className="mb-5 flex h-18 w-18 items-center justify-center rounded-[24px]"
                 style={{
                   background: 'var(--color-accent-bg)',
                   color: 'var(--color-accent)',
                   boxShadow: '0 0 0 10px color-mix(in srgb, var(--color-accent) 8%, transparent)',
                 }}
               >
-                <Bell size={34} />
+                <Bell size={30} />
               </div>
               <div className="empty-state-title">No notifications yet</div>
               <div className="empty-state-desc">
                 Interact with the community to start seeing replies, follows, and milestone updates here.
+              </div>
+              <div className="mt-5 flex flex-wrap justify-center gap-2">
+                {['Replies', 'Mentions', 'Milestones'].map((chip) => (
+                  <span
+                    key={chip}
+                    className="rounded-full px-3 py-1.5 text-xs font-semibold"
+                    style={{
+                      background: 'color-mix(in srgb, var(--color-surface) 78%, white 22%)',
+                      color: 'var(--color-text-muted)',
+                      border: '1px solid var(--color-border)',
+                    }}
+                  >
+                    {chip}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
