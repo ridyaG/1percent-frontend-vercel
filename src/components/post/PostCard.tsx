@@ -1,9 +1,10 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { Heart, MessageCircle, Share2, Bookmark, Pencil, Trash2, X, MoreVertical, Eye } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, Pencil, Trash2, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLike } from '../../hooks/useLike';
+import StreakBadge from '../profile/StreakBadge';
 import CommentSection from './CommentSection';
 import { postsApi } from '../../api/posts';
 import { getApiErrorMessage } from '../../api/errors';
@@ -180,34 +181,6 @@ function ActionBtn({
   );
 }
 
-function StatPill({
-  icon,
-  value,
-  label,
-}: {
-  icon: ReactNode;
-  value: string | number;
-  label: string;
-}) {
-  return (
-    <div
-      className="flex min-w-[86px] items-center gap-2 rounded-2xl px-3 py-2"
-      style={{
-        background: 'rgba(15, 23, 42, 0.38)',
-        color: '#fff',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255,255,255,0.14)',
-      }}
-    >
-      <div className="shrink-0 opacity-90">{icon}</div>
-      <div className="leading-none">
-        <div className="text-base font-bold">{value}</div>
-        <div className="mt-1 text-[10px] uppercase tracking-[0.14em] text-white/70">{label}</div>
-      </div>
-    </div>
-  );
-}
-
 export default function PostCard({ post }: { post: Post }) {
   const { mutate: toggleLike } = useLike();
   const authUser = useAuthStore(s => s.user);
@@ -224,7 +197,6 @@ export default function PostCard({ post }: { post: Post }) {
   const time = formatDistanceToNow(new Date(post.publishedAt), { addSuffix: true });
   const isOwnPost = authUser?.id === post.author.id;
   const typeMeta = POST_TYPE_MAP[post.postType] ?? POST_TYPE_MAP.daily_win;
-  const pseudoViews = Math.max(24, likes * 17 + comments * 9 + 48);
 
   const { mutate: deletePost, isPending: isDeleting } = useMutation({
     mutationFn: () => postsApi.remove(post.id),
@@ -259,28 +231,30 @@ export default function PostCard({ post }: { post: Post }) {
   return (
     <>
       <article
-        className="mb-5 overflow-hidden rounded-[34px] transition-all"
+        className="mb-5 overflow-hidden rounded-[28px] transition-all"
         style={{
-          background: 'color-mix(in srgb, white 90%, var(--color-surface) 10%)',
-          border: '1px solid rgba(255,255,255,0.58)',
-          boxShadow: '0 26px 60px rgba(15, 23, 42, 0.16)',
+          background:
+            'linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 92%, white 8%) 0%, color-mix(in srgb, var(--color-bg-elevated) 82%, white 18%) 100%)',
+          border: '1px solid color-mix(in srgb, var(--color-border) 82%, white 18%)',
+          boxShadow: '0 20px 40px rgba(2, 6, 23, 0.16)',
         } as CSSProperties}
       >
         <div
-          className="px-5 pt-5 pb-4 sm:px-6"
+          className="px-5 pt-5 pb-4"
           style={{
             background:
-              `radial-gradient(circle at top right, ${typeMeta.accent}10, transparent 26%), linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.72))`,
+              `radial-gradient(circle at top right, ${typeMeta.accent}18, transparent 26%), linear-gradient(180deg, rgba(255,255,255,0.02), transparent)`,
           }}
         >
+          <div className="mb-4 h-[3px] w-16 rounded-full" style={{ background: typeMeta.accent, opacity: 0.9 }} />
           <div className="flex items-start gap-3">
           <Link to={`/profile/${author.username}`} className="shrink-0">
             <img
               src={author.avatarUrl || getDefaultAvatar(author.username)}
-              className="h-12 w-12 rounded-full object-cover"
+              className="h-11 w-11 rounded-full object-cover"
               style={{
-                border: '3px solid rgba(255,255,255,0.9)',
-                boxShadow: '0 10px 24px rgba(15, 23, 42, 0.14)',
+                border: '2px solid color-mix(in srgb, var(--color-border) 75%, white 25%)',
+                boxShadow: '0 10px 20px rgba(2, 6, 23, 0.12)',
               }}
               alt={author.displayName}
               onError={e => {
@@ -294,34 +268,27 @@ export default function PostCard({ post }: { post: Post }) {
               <Link
                 to={`/profile/${author.username}`}
                 className="text-[15px] font-semibold transition-opacity hover:opacity-75"
-                style={{ color: '#111827', fontFamily: "'Syne', sans-serif" }}
+                style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}
               >
                 {author.displayName}
               </Link>
-              {(author.currentStreak || 0) >= 7 && (
-                <span
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px]"
-                  style={{ background: '#2563eb', color: '#fff' }}
-                  title="Verified momentum"
-                >
-                  ✓
-                </span>
-              )}
               <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
                 @{author.username}
               </span>
+              <span className="text-xs" style={{ color: 'var(--color-border)' }}>·</span>
+              <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                {time}
+              </span>
             </div>
-            <span className="mt-0.5 text-sm" style={{ color: '#6b7280' }}>
-              Posted {time}
-            </span>
 
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
               <span
                 className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold"
                 style={{
-                  background: `${typeMeta.accent}14`,
+                  background: `${typeMeta.accent}18`,
                   color: typeMeta.accent,
                   border: `1px solid ${typeMeta.accent}30`,
+                  boxShadow: `inset 0 1px 0 ${typeMeta.accent}12`,
                 }}
               >
                 {typeMeta.icon} {typeMeta.label}
@@ -332,9 +299,9 @@ export default function PostCard({ post }: { post: Post }) {
                   key={tag}
                   className="rounded-full px-2.5 py-1 text-[11px] font-medium"
                   style={{
-                    background: `${typeMeta.accent}10`,
-                    color: typeMeta.accent,
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(255,255,255,0.04)',
+                    color: 'var(--color-text-muted)',
+                    border: '1px solid var(--color-border)',
                   }}
                 >
                   {tag}
@@ -344,99 +311,93 @@ export default function PostCard({ post }: { post: Post }) {
           </div>
 
           <div className="shrink-0">
-            {isOwnPost ? (
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setEditOpen(true)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full transition-all"
-                  style={{
-                    background: 'rgba(15,23,42,0.04)',
-                    color: '#6b7280',
-                    border: '1px solid rgba(15,23,42,0.08)',
-                  }}
-                  title="Edit post"
-                >
-                  <Pencil size={14} />
-                </button>
-                <button
-                  onClick={() => window.confirm('Delete this post?') && deletePost()}
-                  disabled={isDeleting}
-                  className="flex h-9 w-9 items-center justify-center rounded-full transition-all disabled:opacity-50"
-                  style={{
-                    background: 'rgba(15,23,42,0.04)',
-                    color: '#6b7280',
-                    border: '1px solid rgba(15,23,42,0.08)',
-                  }}
-                  title="Delete post"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            ) : (
-              <button
-                className="flex h-9 w-9 items-center justify-center rounded-full"
-                style={{
-                  background: 'rgba(15,23,42,0.04)',
-                  color: '#9ca3af',
-                  border: '1px solid rgba(15,23,42,0.08)',
-                }}
-                title="More"
-              >
-                <MoreVertical size={16} />
-              </button>
-            )}
+            <StreakBadge streak={author.currentStreak || 0} />
           </div>
         </div>
         </div>
 
-        <div className="px-5 pb-4 sm:px-6">
-          <p
-            className="text-[17px] leading-[1.8]"
-            style={{ color: '#1f2937' }}
-            dangerouslySetInnerHTML={{ __html: linkHashtags(post.content) }}
-          />
+        <div className="px-5 pb-4">
+          <div
+            className="rounded-[22px] px-4 py-4"
+            style={{
+              background: 'color-mix(in srgb, var(--color-surface) 72%, white 28%)',
+              border: '1px solid color-mix(in srgb, var(--color-border) 84%, white 16%)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+            }}
+          >
+            <p
+              className="text-[15px] leading-8"
+              style={{ color: 'var(--color-text)' }}
+              dangerouslySetInnerHTML={{ __html: linkHashtags(post.content) }}
+            />
+          </div>
 
           {post.mediaUrls && post.mediaUrls.length > 0 && (
             <div
-              className="relative mt-4 overflow-hidden rounded-[28px]"
+              className="mt-3 overflow-hidden rounded-[22px]"
               style={{
                 display: 'grid',
                 gridTemplateColumns: post.mediaUrls.length === 1 ? '1fr' : '1fr 1fr',
                 gap: '3px',
-                border: '1px solid rgba(15, 23, 42, 0.08)',
-                boxShadow: '0 12px 30px rgba(15, 23, 42, 0.12)',
+                border: '1px solid color-mix(in srgb, var(--color-border) 84%, white 16%)',
               }}
             >
               {post.mediaUrls.slice(0, 4).map((url, i) => (
                 <img
                   key={i}
                   src={url}
-                  className="h-72 w-full object-cover sm:h-80"
+                  className="h-52 w-full object-cover"
                   alt=""
                 />
               ))}
-
-              <div
-                className="pointer-events-none absolute inset-x-0 bottom-0 p-4"
-                style={{
-                  background: 'linear-gradient(180deg, transparent, rgba(15,23,42,0.78))',
-                }}
-              >
-                <div className="flex flex-wrap gap-2">
-                  <StatPill icon={<Eye size={15} />} value={pseudoViews.toLocaleString()} label="Views" />
-                  <StatPill icon={<Heart size={15} fill="currentColor" />} value={likes} label="Likes" />
-                  <StatPill icon={<MessageCircle size={15} />} value={comments} label="Replies" />
-                </div>
-              </div>
             </div>
           )}
         </div>
 
+        {isOwnPost && (
+          <div className="flex justify-end gap-1.5 px-5 pb-3">
+            <button
+              onClick={() => setEditOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
+              style={{
+                color: 'var(--color-text-muted)',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid var(--color-border)',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}
+            >
+              <Pencil size={11} /> Edit
+            </button>
+            <button
+              onClick={() => window.confirm('Delete this post?') && deletePost()}
+              disabled={isDeleting}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all disabled:opacity-50"
+              style={{
+                color: 'var(--color-text-muted)',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid var(--color-border)',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.color = '#ef4444';
+                (e.currentTarget as HTMLElement).style.borderColor = 'rgba(239,68,68,0.3)';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.color = 'var(--color-text-muted)';
+                (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)';
+              }}
+            >
+              <Trash2 size={11} /> Delete
+            </button>
+          </div>
+        )}
+
         <div
-          className="flex items-center justify-between px-4 py-2.5 sm:px-5"
+          className="flex items-center justify-between px-3 py-2"
           style={{
-            borderTop: '1px solid rgba(15, 23, 42, 0.08)',
-            background: 'rgba(255,255,255,0.72)',
+            borderTop: '1px solid color-mix(in srgb, var(--color-border) 85%, white 15%)',
+            background:
+              'linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))',
           }}
         >
           <div className="flex items-center">
@@ -479,7 +440,6 @@ export default function PostCard({ post }: { post: Post }) {
             title={bookmarked ? 'Unsave' : 'Save'}
           >
             <Bookmark size={15} fill={bookmarked ? 'currentColor' : 'none'} />
-            <span className="hidden sm:inline">{bookmarked ? 'Saved' : 'Save'}</span>
           </ActionBtn>
         </div>
       </article>
