@@ -4,6 +4,12 @@ export const postsApi = {
   create: (data: { content: string; postType: string }) =>
     api.post('/posts', data).then(r => r.data.data),
 
+  update: (postId: string, data: { content: string; postType: string }) =>
+    api.patch(`/posts/${postId}`, data).then(r => r.data.data),
+
+  remove: (postId: string) =>
+    api.delete(`/posts/${postId}`).then(r => r.data),
+
   getHomeFeed: (cursor?: string) =>
     api.get('/posts/feed/home', { params: { cursor, limit: 20 } }).then(r => r.data.data),
 
