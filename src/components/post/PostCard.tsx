@@ -1,13 +1,9 @@
-import { useState, type CSSProperties } from 'react';
-import {
-  Heart, MessageCircle, Bookmark,
-  Eye, Pencil, Trash2, X, MoreHorizontal,
-} from 'lucide-react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
+import { Heart, MessageCircle, Share2, Bookmark, Pencil, Trash2, X, MoreVertical, Eye } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLike } from '../../hooks/useLike';
-import StreakBadge from '../profile/StreakBadge';
 import CommentSection from './CommentSection';
 import { postsApi } from '../../api/posts';
 import { getApiErrorMessage } from '../../api/errors';
@@ -16,19 +12,19 @@ import type { Post } from '../../types/post';
 import { getDefaultAvatar } from '../../lib/utils';
 import toast from 'react-hot-toast';
 
-const POST_TYPE_MAP: Record<string, { label: string; icon: string; color: string }> = {
-  daily_win:      { label: 'Daily Win',      icon: '🏆', color: '#f59e0b' },
-  milestone:      { label: 'Milestone',      icon: '🎯', color: '#6366f1' },
-  reflection:     { label: 'Reflection',     icon: '💭', color: '#64748b' },
-  challenge:      { label: 'Challenge',      icon: '⚡', color: '#FF5C00' },
-  goal_update:    { label: 'Goal Update',    icon: '📈', color: '#10b981' },
-  photo_progress: { label: 'Photo Progress', icon: '📸', color: '#ec4899' },
+const POST_TYPE_MAP: Record<string, { label: string; icon: string; accent: string }> = {
+  daily_win:      { label: 'Daily Win',      icon: '🏆', accent: '#f59e0b' },
+  milestone:      { label: 'Milestone',      icon: '🎯', accent: '#6366f1' },
+  reflection:     { label: 'Reflection',     icon: '💭', accent: '#64748b' },
+  challenge:      { label: 'Challenge',      icon: '⚡', accent: 'var(--color-accent)' },
+  goal_update:    { label: 'Goal Update',    icon: '📈', accent: '#10b981' },
+  photo_progress: { label: 'Photo Progress', icon: '📸', accent: '#ec4899' },
 };
 
 function linkHashtags(text: string) {
   return text.replace(
     /#(\w+)/g,
-    `<span style="color:var(--color-accent);font-weight:600;cursor:pointer">#$1</span>`
+    `<span style="color:var(--color-accent);font-weight:600;cursor:pointer" class="hashtag-link">#$1</span>`
   );
 }
 
@@ -52,8 +48,8 @@ function EditPostModal({ post, onClose }: { post: Post; onClose: () => void }) {
       toast.success('Post updated');
       onClose();
     },
-    onError: err =>
-      toast.error(getApiErrorMessage(err, { fallback: 'Could not update post.', action: 'update your post' })),
+    onError: (error) =>
+      toast.error(getApiErrorMessage(error, { fallback: 'Could not update post.', action: 'update your post' })),
   });
 
   return (
@@ -63,17 +59,19 @@ function EditPostModal({ post, onClose }: { post: Post; onClose: () => void }) {
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="w-full max-w-lg overflow-hidden rounded-3xl"
+        className="w-full max-w-lg overflow-hidden rounded-2xl"
         style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
       >
         <div
           className="flex items-center justify-between px-5 py-4"
           style={{ borderBottom: '1px solid var(--color-border)' }}
         >
-          <span className="font-semibold" style={{ color: 'var(--color-text)' }}>Edit Post</span>
+          <span className="font-semibold text-base" style={{ color: 'var(--color-text)' }}>
+            Edit post
+          </span>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full"
+            className="flex h-7 w-7 items-center justify-center rounded-full transition-colors"
             style={{ background: 'var(--color-hover)', color: 'var(--color-text-muted)' }}
           >
             <X size={14} />
@@ -81,15 +79,15 @@ function EditPostModal({ post, onClose }: { post: Post; onClose: () => void }) {
         </div>
 
         <div className="flex flex-wrap gap-2 px-5 pt-4">
-          {Object.entries(POST_TYPE_MAP).map(([val, t]) => (
+          {Object.entries(POST_TYPE_MAP).map(([value, t]) => (
             <button
-              key={val}
-              onClick={() => setPostType(val)}
+              key={value}
+              onClick={() => setPostType(value)}
               className="rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
               style={{
-                background: postType === val ? 'var(--color-accent)' : 'transparent',
-                color: postType === val ? '#fff' : 'var(--color-text-muted)',
-                border: `1px solid ${postType === val ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                background: postType === value ? 'var(--color-accent)' : 'transparent',
+                color: postType === value ? '#fff' : 'var(--color-text-muted)',
+                border: `1px solid ${postType === value ? 'var(--color-accent)' : 'var(--color-border)'}`,
               }}
             >
               {t.icon} {t.label}
@@ -104,7 +102,7 @@ function EditPostModal({ post, onClose }: { post: Post; onClose: () => void }) {
             maxLength={MAX}
             rows={5}
             autoFocus
-            className="w-full resize-none rounded-2xl px-4 py-3 text-sm outline-none"
+            className="w-full resize-none rounded-xl px-4 py-3 text-sm outline-none transition-all"
             style={{
               background: 'var(--color-bg)',
               color: 'var(--color-text)',
@@ -125,7 +123,7 @@ function EditPostModal({ post, onClose }: { post: Post; onClose: () => void }) {
         >
           <button
             onClick={onClose}
-            className="rounded-xl px-4 py-2 text-sm"
+            className="rounded-xl px-4 py-2 text-sm transition-colors"
             style={{ color: 'var(--color-text-muted)', background: 'var(--color-hover)' }}
           >
             Cancel
@@ -133,7 +131,7 @@ function EditPostModal({ post, onClose }: { post: Post; onClose: () => void }) {
           <button
             onClick={() => content.trim() && updatePost()}
             disabled={!content.trim() || isPending}
-            className="rounded-xl px-5 py-2 text-sm font-semibold disabled:opacity-40"
+            className="rounded-xl px-5 py-2 text-sm font-semibold disabled:opacity-40 transition-all"
             style={{ background: 'var(--color-accent)', color: '#fff' }}
           >
             {isPending ? 'Saving…' : 'Save changes'}
@@ -144,64 +142,68 @@ function EditPostModal({ post, onClose }: { post: Post; onClose: () => void }) {
   );
 }
 
-function OwnerMenu({
-  onEdit,
-  onDelete,
-  isDeleting,
+function ActionBtn({
+  onClick,
+  active,
+  activeColor,
+  children,
+  title,
 }: {
-  onEdit: () => void;
-  onDelete: () => void;
-  isDeleting: boolean;
+  onClick?: () => void;
+  active?: boolean;
+  activeColor?: string;
+  children: ReactNode;
+  title?: string;
 }) {
-  const [open, setOpen] = useState(false);
-
   return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(v => !v)}
-        className="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
-        style={{ color: 'var(--color-text-muted)' }}
-        onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-hover)')}
-        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-      >
-        <MoreHorizontal size={18} />
-      </button>
+    <button
+      onClick={onClick}
+      title={title}
+      className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-all select-none"
+      style={{
+        color: active ? activeColor ?? 'var(--color-accent)' : 'var(--color-text-muted)',
+        background: active ? `${activeColor ?? 'var(--color-accent)'}18` : 'transparent',
+      }}
+      onMouseEnter={e => {
+        if (!active) {
+          (e.currentTarget as HTMLElement).style.background = 'var(--color-hover)';
+        }
+      }}
+      onMouseLeave={e => {
+        if (!active) {
+          (e.currentTarget as HTMLElement).style.background = 'transparent';
+        }
+      }}
+    >
+      {children}
+    </button>
+  );
+}
 
-      {open && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div
-            className="absolute right-0 top-9 z-20 w-36 overflow-hidden rounded-xl py-1 shadow-xl"
-            style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
-          >
-            <button
-              onClick={() => {
-                setOpen(false);
-                onEdit();
-              }}
-              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm transition-colors"
-              style={{ color: 'var(--color-text)' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-hover)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              <Pencil size={13} /> Edit
-            </button>
-            <button
-              onClick={() => {
-                setOpen(false);
-                if (window.confirm('Delete this post?')) onDelete();
-              }}
-              disabled={isDeleting}
-              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm transition-colors disabled:opacity-50"
-              style={{ color: '#ef4444' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              <Trash2 size={13} /> Delete
-            </button>
-          </div>
-        </>
-      )}
+function StatPill({
+  icon,
+  value,
+  label,
+}: {
+  icon: ReactNode;
+  value: string | number;
+  label: string;
+}) {
+  return (
+    <div
+      className="flex min-w-[86px] items-center gap-2 rounded-2xl px-3 py-2"
+      style={{
+        background: 'rgba(15, 23, 42, 0.38)',
+        color: '#fff',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255,255,255,0.14)',
+      }}
+    >
+      <div className="shrink-0 opacity-90">{icon}</div>
+      <div className="leading-none">
+        <div className="text-base font-bold">{value}</div>
+        <div className="mt-1 text-[10px] uppercase tracking-[0.14em] text-white/70">{label}</div>
+      </div>
     </div>
   );
 }
@@ -222,8 +224,7 @@ export default function PostCard({ post }: { post: Post }) {
   const time = formatDistanceToNow(new Date(post.publishedAt), { addSuffix: true });
   const isOwnPost = authUser?.id === post.author.id;
   const typeMeta = POST_TYPE_MAP[post.postType] ?? POST_TYPE_MAP.daily_win;
-  const hasMedia = (post.mediaUrls?.length ?? 0) > 0;
-  const viewCount = likes > 0 ? (likes * 27 + 12).toLocaleString() : '—';
+  const pseudoViews = Math.max(24, likes * 17 + comments * 9 + 48);
 
   const { mutate: deletePost, isPending: isDeleting } = useMutation({
     mutationFn: () => postsApi.remove(post.id),
@@ -231,32 +232,56 @@ export default function PostCard({ post }: { post: Post }) {
       invalidatePostQueries(qc);
       toast.success('Post deleted');
     },
-    onError: err =>
-      toast.error(getApiErrorMessage(err, { fallback: 'Could not delete post.', action: 'delete your post' })),
+    onError: (error) =>
+      toast.error(getApiErrorMessage(error, { fallback: 'Could not delete post.', action: 'delete your post' })),
   });
 
   const handleLike = () => {
     setLikePopping(true);
-    setTimeout(() => setLikePopping(false), 320);
+    setTimeout(() => setLikePopping(false), 350);
     toggleLike({ postId: post.id, liked: post.liked ?? false });
+  };
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/post/${post.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Check this out on 1% Better', url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copied!');
+      }
+    } catch {
+      toast.error('Failed to copy link.');
+    }
   };
 
   return (
     <>
       <article
-        className="mb-4 overflow-hidden rounded-3xl"
+        className="mb-5 overflow-hidden rounded-[34px] transition-all"
         style={{
-          background: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          boxShadow: '0 1px 12px rgba(0,0,0,0.07)',
+          background: 'color-mix(in srgb, white 90%, var(--color-surface) 10%)',
+          border: '1px solid rgba(255,255,255,0.58)',
+          boxShadow: '0 26px 60px rgba(15, 23, 42, 0.16)',
         } as CSSProperties}
       >
-        <div className="flex items-center gap-3 px-5 pt-5 pb-3">
+        <div
+          className="px-5 pt-5 pb-4 sm:px-6"
+          style={{
+            background:
+              `radial-gradient(circle at top right, ${typeMeta.accent}10, transparent 26%), linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.72))`,
+          }}
+        >
+          <div className="flex items-start gap-3">
           <Link to={`/profile/${author.username}`} className="shrink-0">
             <img
               src={author.avatarUrl || getDefaultAvatar(author.username)}
-              className="h-11 w-11 rounded-full object-cover"
-              style={{ border: '2.5px solid var(--color-border)' } as CSSProperties}
+              className="h-12 w-12 rounded-full object-cover"
+              style={{
+                border: '3px solid rgba(255,255,255,0.9)',
+                boxShadow: '0 10px 24px rgba(15, 23, 42, 0.14)',
+              }}
               alt={author.displayName}
               onError={e => {
                 (e.target as HTMLImageElement).src = getDefaultAvatar(author.username);
@@ -265,196 +290,197 @@ export default function PostCard({ post }: { post: Post }) {
           </Link>
 
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2 flex-wrap">
               <Link
                 to={`/profile/${author.username}`}
-                className="text-[15px] font-bold leading-snug transition-opacity hover:opacity-70"
-                style={{ color: 'var(--color-text)' }}
+                className="text-[15px] font-semibold transition-opacity hover:opacity-75"
+                style={{ color: '#111827', fontFamily: "'Syne', sans-serif" }}
               >
                 {author.displayName}
               </Link>
               {(author.currentStreak || 0) >= 7 && (
                 <span
-                  title={`${author.currentStreak}-day streak`}
-                  className="flex h-[18px] w-[18px] items-center justify-center rounded-full text-[10px] font-bold"
-                  style={{ background: 'var(--color-accent)', color: '#fff', lineHeight: 1 }}
+                  className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px]"
+                  style={{ background: '#2563eb', color: '#fff' }}
+                  title="Verified momentum"
                 >
-                  🔥
+                  ✓
                 </span>
               )}
+              <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                @{author.username}
+              </span>
             </div>
-            <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            <span className="mt-0.5 text-sm" style={{ color: '#6b7280' }}>
               Posted {time}
             </span>
+
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+              <span
+                className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                style={{
+                  background: `${typeMeta.accent}14`,
+                  color: typeMeta.accent,
+                  border: `1px solid ${typeMeta.accent}30`,
+                }}
+              >
+                {typeMeta.icon} {typeMeta.label}
+              </span>
+
+              {post.hashtags?.slice(0, 3).map(tag => (
+                <span
+                  key={tag}
+                  className="rounded-full px-2.5 py-1 text-[11px] font-medium"
+                  style={{
+                    background: `${typeMeta.accent}10`,
+                    color: typeMeta.accent,
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
 
-          <StreakBadge streak={author.currentStreak || 0} />
-
-          {isOwnPost ? (
-            <OwnerMenu onEdit={() => setEditOpen(true)} onDelete={() => deletePost()} isDeleting={isDeleting} />
-          ) : (
-            <button
-              className="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
-              style={{ color: 'var(--color-text-muted)' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-hover)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              <MoreHorizontal size={18} />
-            </button>
-          )}
+          <div className="shrink-0">
+            {isOwnPost ? (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setEditOpen(true)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full transition-all"
+                  style={{
+                    background: 'rgba(15,23,42,0.04)',
+                    color: '#6b7280',
+                    border: '1px solid rgba(15,23,42,0.08)',
+                  }}
+                  title="Edit post"
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
+                  onClick={() => window.confirm('Delete this post?') && deletePost()}
+                  disabled={isDeleting}
+                  className="flex h-9 w-9 items-center justify-center rounded-full transition-all disabled:opacity-50"
+                  style={{
+                    background: 'rgba(15,23,42,0.04)',
+                    color: '#6b7280',
+                    border: '1px solid rgba(15,23,42,0.08)',
+                  }}
+                  title="Delete post"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ) : (
+              <button
+                className="flex h-9 w-9 items-center justify-center rounded-full"
+                style={{
+                  background: 'rgba(15,23,42,0.04)',
+                  color: '#9ca3af',
+                  border: '1px solid rgba(15,23,42,0.08)',
+                }}
+                title="More"
+              >
+                <MoreVertical size={16} />
+              </button>
+            )}
+          </div>
+        </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 px-5 pb-3">
-          <span
-            className="inline-flex items-center gap-1 rounded-full px-2.5 py-[3px] text-[11px] font-bold uppercase tracking-wide"
-            style={{
-              background: `${typeMeta.color}1a`,
-              color: typeMeta.color,
-              border: `1px solid ${typeMeta.color}35`,
-            }}
-          >
-            {typeMeta.icon} {typeMeta.label}
-          </span>
-
-          {post.hashtags?.slice(0, 3).map(tag => (
-            <span
-              key={tag}
-              className="rounded-full px-2.5 py-[3px] text-[11px] font-semibold"
-              style={{
-                background: 'var(--color-hover)',
-                color: 'var(--color-text-muted)',
-                border: '1px solid var(--color-border)',
-              }}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        <div className="px-5 pb-4">
+        <div className="px-5 pb-4 sm:px-6">
           <p
-            className="text-[15px] leading-[1.7]"
-            style={{ color: 'var(--color-text)' }}
+            className="text-[17px] leading-[1.8]"
+            style={{ color: '#1f2937' }}
             dangerouslySetInnerHTML={{ __html: linkHashtags(post.content) }}
           />
-        </div>
 
-        {hasMedia && (
-          <div className="relative mx-4 mb-4 overflow-hidden rounded-2xl bg-black">
+          {post.mediaUrls && post.mediaUrls.length > 0 && (
             <div
+              className="relative mt-4 overflow-hidden rounded-[28px]"
               style={{
                 display: 'grid',
-                gridTemplateColumns: post.mediaUrls!.length === 1 ? '1fr' : '1fr 1fr',
-                gap: '2px',
+                gridTemplateColumns: post.mediaUrls.length === 1 ? '1fr' : '1fr 1fr',
+                gap: '3px',
+                border: '1px solid rgba(15, 23, 42, 0.08)',
+                boxShadow: '0 12px 30px rgba(15, 23, 42, 0.12)',
               }}
             >
-              {post.mediaUrls!.slice(0, 4).map((url, i) => (
+              {post.mediaUrls.slice(0, 4).map((url, i) => (
                 <img
                   key={i}
                   src={url}
+                  className="h-72 w-full object-cover sm:h-80"
                   alt=""
-                  className="w-full object-cover"
-                  style={{ height: post.mediaUrls!.length === 1 ? '380px' : '200px' }}
                 />
               ))}
-            </div>
 
-            <div
-              className="absolute inset-x-0 bottom-0 flex items-end justify-around px-5 py-4"
-              style={{
-                background: 'linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0) 100%)',
-              }}
-            >
-              {[
-                { emoji: '⏱', value: '52', unit: 'Minutes' },
-                { emoji: '🔥', value: '128', unit: 'kcal' },
-                { emoji: '⭐', value: '3', unit: 'Score' },
-              ].map(stat => (
-                <div key={stat.unit} className="flex flex-col items-center gap-0.5">
-                  <span className="text-base font-bold text-white">
-                    {stat.emoji} {stat.value}
-                  </span>
-                  <span className="text-[11px] text-white/60">{stat.unit}</span>
+              <div
+                className="pointer-events-none absolute inset-x-0 bottom-0 p-4"
+                style={{
+                  background: 'linear-gradient(180deg, transparent, rgba(15,23,42,0.78))',
+                }}
+              >
+                <div className="flex flex-wrap gap-2">
+                  <StatPill icon={<Eye size={15} />} value={pseudoViews.toLocaleString()} label="Views" />
+                  <StatPill icon={<Heart size={15} fill="currentColor" />} value={likes} label="Likes" />
+                  <StatPill icon={<MessageCircle size={15} />} value={comments} label="Replies" />
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         <div
-          className="flex items-center justify-between px-3 py-1.5"
-          style={{ borderTop: '1px solid var(--color-border)' }}
+          className="flex items-center justify-between px-4 py-2.5 sm:px-5"
+          style={{
+            borderTop: '1px solid rgba(15, 23, 42, 0.08)',
+            background: 'rgba(255,255,255,0.72)',
+          }}
         >
-          <div className="flex items-center gap-0.5">
-            <div
-              className="flex items-center gap-1.5 px-3 py-2 text-sm"
-              style={{ color: 'var(--color-text-muted)' }}
-            >
-              <Eye size={15} />
-              <span>{viewCount}</span>
-            </div>
-
-            <button
+          <div className="flex items-center">
+            <ActionBtn
               onClick={handleLike}
-              className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-all select-none"
-              style={{
-                color: post.liked ? '#ec4899' : 'var(--color-text-muted)',
-                background: post.liked ? 'rgba(236,72,153,0.1)' : 'transparent',
-              }}
-              onMouseEnter={e => {
-                if (!post.liked) (e.currentTarget.style.background = 'var(--color-hover)');
-              }}
-              onMouseLeave={e => {
-                if (!post.liked) (e.currentTarget.style.background = 'transparent');
-              }}
+              active={post.liked}
+              activeColor="#ec4899"
+              title="Like"
             >
               <Heart
                 size={15}
                 fill={post.liked ? 'currentColor' : 'none'}
                 style={{
-                  transform: likePopping ? 'scale(1.45)' : 'scale(1)',
-                  transition: 'transform 0.22s cubic-bezier(.34,1.56,.64,1)',
+                  transform: likePopping ? 'scale(1.35)' : 'scale(1)',
+                  transition: 'transform 0.2s cubic-bezier(.34,1.56,.64,1)',
                 }}
               />
-              <span>{likes > 0 ? likes : ''}</span>
-            </button>
+              {likes > 0 && <span>{likes}</span>}
+            </ActionBtn>
 
-            <button
+            <ActionBtn
               onClick={() => setShowComments(v => !v)}
-              className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-all"
-              style={{
-                color: showComments ? '#60a5fa' : 'var(--color-text-muted)',
-                background: showComments ? 'rgba(96,165,250,0.1)' : 'transparent',
-              }}
-              onMouseEnter={e => {
-                if (!showComments) (e.currentTarget.style.background = 'var(--color-hover)');
-              }}
-              onMouseLeave={e => {
-                if (!showComments) (e.currentTarget.style.background = 'transparent');
-              }}
+              active={showComments}
+              activeColor="#60a5fa"
+              title="Comments"
             >
               <MessageCircle size={15} />
-              <span>{comments > 0 ? comments : ''}</span>
-            </button>
+              {comments > 0 && <span>{comments}</span>}
+            </ActionBtn>
+
+            <ActionBtn onClick={handleShare} title="Share">
+              <Share2 size={15} />
+            </ActionBtn>
           </div>
 
-          <button
+          <ActionBtn
             onClick={() => setBookmarked(b => !b)}
-            className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-all"
-            style={{
-              color: bookmarked ? '#f59e0b' : 'var(--color-text-muted)',
-              background: bookmarked ? 'rgba(245,158,11,0.1)' : 'transparent',
-            }}
-            onMouseEnter={e => {
-              if (!bookmarked) (e.currentTarget.style.background = 'var(--color-hover)');
-            }}
-            onMouseLeave={e => {
-              if (!bookmarked) (e.currentTarget.style.background = 'transparent');
-            }}
+            active={bookmarked}
+            activeColor="#f59e0b"
+            title={bookmarked ? 'Unsave' : 'Save'}
           >
             <Bookmark size={15} fill={bookmarked ? 'currentColor' : 'none'} />
-            <span>{bookmarked ? 'Saved' : 'Save'}</span>
-          </button>
+            <span className="hidden sm:inline">{bookmarked ? 'Saved' : 'Save'}</span>
+          </ActionBtn>
         </div>
       </article>
 
