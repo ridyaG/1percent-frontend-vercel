@@ -1,195 +1,144 @@
-import { useState, useRef } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, MapPin, Globe, Target, Edit2, Users, MessageCircle } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
-import { usersApi, type UpdateProfilePayload } from '../api/users';
-import { chatApi } from '../api/chat';
-import { postsApi } from '../api/posts';
-import { getApiErrorMessage } from '../api/errors';
-import { getDefaultAvatar, getStreakBadgeClass, getStreakLabel } from '../lib/utils';
-import PostCard from '../components/post/PostCard';
-import StreakBadge from '../components/profile/StreakBadge';
-import { FOCUS_AREAS } from '../lib/constants';
+import { useState, type CSSProperties } from 'react';
+import { Heart, MessageCircle, Share2, Bookmark, Pencil, Trash2, X } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { Link } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLike } from '../../hooks/useLike';
+import StreakBadge from '../profile/StreakBadge';
+import CommentSection from './CommentSection';
+import { postsApi } from '../../api/posts';
+import { getApiErrorMessage } from '../../api/errors';
+import { useAuthStore } from '../../store/authStore';
+import type { Post } from '../../types/post';
+import { getDefaultAvatar } from '../../lib/utils';
 import toast from 'react-hot-toast';
-import type { Post } from '../types/post';
-import type { User } from '../types/user';
 
-type ProfileUser = User & {
-  followStatus?: 'accepted' | 'pending' | null;
+// ─── Post type config ────────────────────────────────────────────────────────
+const POST_TYPE_MAP: Record<string, { label: string; icon: string; accent: string }> = {
+  daily_win:      { label: 'Daily Win',      icon: '🏆', accent: '#f59e0b' },
+  milestone:      { label: 'Milestone',      icon: '🎯', accent: '#6366f1' },
+  reflection:     { label: 'Reflection',     icon: '💭', accent: '#64748b' },
+  challenge:      { label: 'Challenge',      icon: '⚡', accent: 'var(--color-accent)' },
+  goal_update:    { label: 'Goal Update',    icon: '📈', accent: '#10b981' },
+  photo_progress: { label: 'Photo Progress', icon: '📸', accent: '#ec4899' },
 };
 
-// ── Edit Profile Modal ──────────────────────────────────────────────
-function EditProfileModal({ user, onClose }: { user: User; onClose: () => void }) {
+// ─── Inline hashtag renderer ─────────────────────────────────────────────────
+function linkHashtags(text: string) {
+  return text.replace(
+    /#(\w+)/g,
+    `<span style="color:var(--color-accent);font-weight:600;cursor:pointer" class="hashtag-link">#$1</span>`
+  );
+}
+
+// ─── Edit modal ──────────────────────────────────────────────────────────────
+function EditPostModal({ post, onClose }: { post: Post; onClose: () => void }) {
   const qc = useQueryClient();
-  const setUser = useAuthStore(s => s.setUser);
+  const [content, setContent] = useState(post.content);
+  const [postType, setPostType] = useState(post.postType);
+  const MAX = 500;
 
-  const [form, setForm] = useState<UpdateProfilePayload>({
-    displayName: user.displayName,
-    bio: user.bio || '',
-    location: user.location || '',
-    websiteUrl: user.websiteUrl || '',
-    goalStatement: user.goalStatement || '',
-    focusAreas: [...(user.focusAreas || [])],
-  });
-
-  const { mutate: save, isPending } = useMutation({
-    mutationFn: () => usersApi.updateProfile(form),
-    onSuccess: updated => {
-      setUser({ ...useAuthStore.getState().user!, ...updated });
-      qc.invalidateQueries({ queryKey: ['profile'] });
-      toast.success('Profile updated ✓');
+  const { mutate: updatePost, isPending } = useMutation({
+    mutationFn: () => postsApi.update(post.id, { content: content.trim(), postType }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['feed'] });
+      qc.invalidateQueries({ queryKey: ['user-posts'] });
+      qc.invalidateQueries({ queryKey: ['explore-recent'] });
+      qc.invalidateQueries({ queryKey: ['search'] });
+      toast.success('Post updated');
       onClose();
     },
-    onError: (error) => toast.error(getApiErrorMessage(error, { fallback: 'Failed to update profile.', action: 'save your profile' })),
+    onError: (error) =>
+      toast.error(getApiErrorMessage(error, { fallback: 'Could not update post.', action: 'update your post' })),
   });
-
-  const update = (key: keyof UpdateProfilePayload) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-      setForm(f => ({ ...f, [key]: e.target.value }));
-
-  const toggleFocus = (area: string) => {
-    setForm(f => ({
-      ...f,
-      focusAreas: f.focusAreas?.includes(area)
-        ? f.focusAreas.filter(a => a !== area)
-        : [...(f.focusAreas || []), area],
-    }));
-  };
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center z-50 p-4"
-      style={{ background: 'rgba(0,0,0,0.75)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="w-full max-w-lg rounded-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-lg overflow-hidden rounded-2xl"
         style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
       >
         {/* Header */}
         <div
-          className="flex items-center justify-between p-5 shrink-0"
+          className="flex items-center justify-between px-5 py-4"
           style={{ borderBottom: '1px solid var(--color-border)' }}
         >
-          <h2 className="font-bold text-lg" style={{ color: 'var(--color-text)' }}>Edit Profile</h2>
-          <button onClick={onClose} style={{ color: 'var(--color-text-muted)' }}>
-            <X size={20} />
+          <span className="font-semibold text-base" style={{ color: 'var(--color-text)' }}>
+            Edit post
+          </span>
+          <button
+            onClick={onClose}
+            className="flex h-7 w-7 items-center justify-center rounded-full transition-colors"
+            style={{ background: 'var(--color-hover)', color: 'var(--color-text-muted)' }}
+          >
+            <X size={14} />
           </button>
         </div>
 
-        {/* Form */}
-        <div className="overflow-y-auto flex-1 p-5 space-y-4">
-          {[
-            { label: 'Display Name', key: 'displayName' as const, type: 'text', placeholder: 'Your name' },
-            { label: 'Location',     key: 'location'    as const, type: 'text', placeholder: 'City, Country' },
-            { label: 'Website',      key: 'websiteUrl'  as const, type: 'url',  placeholder: 'https://yoursite.com' },
-          ].map(f => (
-            <div key={f.key}>
-              <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-                {f.label}
-              </label>
-              <input
-                type={f.type}
-                value={(form[f.key] as string) || ''}
-                onChange={update(f.key)}
-                placeholder={f.placeholder}
-                className="w-full mt-1 px-3 py-2.5 rounded-lg text-sm outline-none transition-colors"
-                style={{
-                  background: 'var(--color-bg)',
-                  border: '1px solid var(--color-border)',
-                  color: 'var(--color-text)',
-                  caretColor: 'var(--color-accent)',
-                }}
-                onFocus={e => (e.target.style.borderColor = 'var(--color-accent)')}
-                onBlur={e => (e.target.style.borderColor = 'var(--color-border)')}
-              />
-            </div>
+        {/* Type picker */}
+        <div className="flex flex-wrap gap-2 px-5 pt-4">
+          {Object.entries(POST_TYPE_MAP).map(([value, t]) => (
+            <button
+              key={value}
+              onClick={() => setPostType(value)}
+              className="rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
+              style={{
+                background: postType === value ? 'var(--color-accent)' : 'transparent',
+                color: postType === value ? '#fff' : 'var(--color-text-muted)',
+                border: `1px solid ${postType === value ? 'var(--color-accent)' : 'var(--color-border)'}`,
+              }}
+            >
+              {t.icon} {t.label}
+            </button>
           ))}
+        </div>
 
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>Bio</label>
-            <textarea
-              value={form.bio || ''}
-              onChange={update('bio')}
-              placeholder="Tell the community about yourself..."
-              rows={3}
-              className="w-full mt-1 px-3 py-2.5 rounded-lg text-sm outline-none resize-none transition-colors"
-              style={{
-                background: 'var(--color-bg)',
-                border: '1px solid var(--color-border)',
-                color: 'var(--color-text)',
-                caretColor: 'var(--color-accent)',
-              }}
-              onFocus={e => (e.target.style.borderColor = 'var(--color-accent)')}
-              onBlur={e => (e.target.style.borderColor = 'var(--color-border)')}
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>Goal Statement</label>
-            <input
-              type="text"
-              value={form.goalStatement || ''}
-              onChange={update('goalStatement')}
-              placeholder="What are you working towards?"
-              className="w-full mt-1 px-3 py-2.5 rounded-lg text-sm outline-none transition-colors"
-              style={{
-                background: 'var(--color-bg)',
-                border: '1px solid var(--color-border)',
-                color: 'var(--color-text)',
-                caretColor: 'var(--color-accent)',
-              }}
-              onFocus={e => (e.target.style.borderColor = 'var(--color-accent)')}
-              onBlur={e => (e.target.style.borderColor = 'var(--color-border)')}
-            />
-          </div>
-
-          {/* Focus areas */}
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>Focus Areas</label>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {FOCUS_AREAS.map(area => {
-                const on = form.focusAreas?.includes(area);
-                return (
-                  <button
-                    key={area}
-                    type="button"
-                    onClick={() => toggleFocus(area)}
-                    className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors capitalize"
-                    style={{
-                      background: on ? 'var(--color-accent-bg)' : 'var(--color-bg)',
-                      border: `1px solid ${on ? 'var(--color-accent)' : 'var(--color-border)'}`,
-                      color: on ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                    }}
-                  >
-                    {area}
-                  </button>
-                );
-              })}
-            </div>
+        {/* Textarea */}
+        <div className="px-5 py-4">
+          <textarea
+            value={content}
+            onChange={e => setContent(e.target.value)}
+            maxLength={MAX}
+            rows={5}
+            autoFocus
+            className="w-full resize-none rounded-xl px-4 py-3 text-sm outline-none transition-all"
+            style={{
+              background: 'var(--color-bg)',
+              color: 'var(--color-text)',
+              border: '1px solid var(--color-border)',
+              caretColor: 'var(--color-accent)',
+            }}
+            onFocus={e => (e.target.style.borderColor = 'var(--color-accent)')}
+            onBlur={e => (e.target.style.borderColor = 'var(--color-border)')}
+          />
+          <div className="mt-1.5 text-right text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            {MAX - content.length}
           </div>
         </div>
 
         {/* Footer */}
         <div
-          className="flex justify-end gap-3 p-5 shrink-0"
+          className="flex justify-end gap-3 px-5 py-4"
           style={{ borderTop: '1px solid var(--color-border)' }}
         >
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-sm transition-colors"
-            style={{ color: 'var(--color-text-muted)' }}
+            className="rounded-xl px-4 py-2 text-sm transition-colors"
+            style={{ color: 'var(--color-text-muted)', background: 'var(--color-hover)' }}
           >
             Cancel
           </button>
           <button
-            onClick={() => save()}
-            disabled={isPending}
-            className="px-5 py-2 rounded-lg font-semibold text-sm disabled:opacity-50 transition-colors"
-            style={{ background: 'var(--color-accent)', color: 'var(--color-accent-text)' }}
+            onClick={() => content.trim() && updatePost()}
+            disabled={!content.trim() || isPending}
+            className="rounded-xl px-5 py-2 text-sm font-semibold disabled:opacity-40 transition-all"
+            style={{ background: 'var(--color-accent)', color: '#fff' }}
           >
-            {isPending ? 'Saving...' : 'Save Changes'}
+            {isPending ? 'Saving…' : 'Save changes'}
           </button>
         </div>
       </div>
@@ -197,354 +146,301 @@ function EditProfileModal({ user, onClose }: { user: User; onClose: () => void }
   );
 }
 
-// ── Follow / Followers Modal ────────────────────────────────────────
-function PeopleModal({ title, userId, type, onClose }: {
-  title: string; userId: string; type: 'followers' | 'following'; onClose: () => void;
+// ─── Action button ────────────────────────────────────────────────────────────
+function ActionBtn({
+  onClick,
+  active,
+  activeColor,
+  children,
+  title,
+  align = 'left',
+}: {
+  onClick?: () => void;
+  active?: boolean;
+  activeColor?: string;
+  children: React.ReactNode;
+  title?: string;
+  align?: 'left' | 'right';
 }) {
-  const { data = [], isLoading } = useQuery({
-    queryKey: [type, userId],
-    queryFn: () => type === 'followers'
-      ? usersApi.getFollowers(userId)
-      : usersApi.getFollowing(userId),
-  });
-
-  // backend returns Follow objects with nested user
-  const people = (data as Array<{ follower?: User; following?: User }>).map(
-    f => f.follower || f.following
-  ).filter(Boolean) as User[];
-
   return (
-    <div
-      className="fixed inset-0 flex items-center justify-center z-50 p-4"
-      style={{ background: 'rgba(0,0,0,0.75)' }}
-      onClick={e => e.target === e.currentTarget && onClose()}
+    <button
+      onClick={onClick}
+      title={title}
+      className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-all select-none"
+      style={{
+        color: active ? activeColor ?? 'var(--color-accent)' : 'var(--color-text-muted)',
+        background: active ? `${activeColor ?? 'var(--color-accent)'}18` : 'transparent',
+      }}
+      onMouseEnter={e => {
+        if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--color-hover)';
+      }}
+      onMouseLeave={e => {
+        if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent';
+      }}
     >
-      <div
-        className="w-full max-w-sm rounded-2xl overflow-hidden"
-        style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
-      >
-        <div className="flex items-center justify-between p-5"
-          style={{ borderBottom: '1px solid var(--color-border)' }}>
-          <h3 className="font-bold" style={{ color: 'var(--color-text)' }}>{title}</h3>
-          <button onClick={onClose} style={{ color: 'var(--color-text-muted)' }}><X size={18} /></button>
-        </div>
-        <div className="max-h-80 overflow-y-auto">
-          {isLoading ? (
-            <div className="p-5 text-center" style={{ color: 'var(--color-text-muted)' }}>Loading...</div>
-          ) : people.length === 0 ? (
-            <div className="p-8 text-center" style={{ color: 'var(--color-text-muted)' }}>
-              <Users size={32} className="mx-auto mb-2 opacity-30" />
-              <div className="text-sm">Nobody here yet</div>
-            </div>
-          ) : people.map(u => (
-            <div key={u.id} className="flex items-center gap-3 px-5 py-3"
-              style={{ borderBottom: '1px solid var(--color-border)' }}>
-              <img src={u.avatarUrl || getDefaultAvatar(u.username)} className="w-9 h-9 rounded-full" alt="" />
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>
-                  {u.displayName}
-                </div>
-                <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>@{u.username}</div>
-              </div>
-              <StreakBadge streak={u.currentStreak || 0} />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+      {children}
+    </button>
   );
 }
 
-// ── Main ProfilePage ────────────────────────────────────────────────
-export default function ProfilePage() {
+// ─── Main PostCard ────────────────────────────────────────────────────────────
+export default function PostCard({ post }: { post: Post }) {
+  const { mutate: toggleLike } = useLike();
   const authUser = useAuthStore(s => s.user);
-  const { username } = useParams<{ username: string }>();
-  const navigate = useNavigate();
   const qc = useQueryClient();
-  const [editOpen, setEditOpen] = useState(false);
-  const [peopleModal, setPeopleModal] = useState<'followers' | 'following' | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
-  const targetUsername = username || authUser?.username;
-  const isOwnProfile = !username || username === authUser?.username;
 
-  const { data: profile } = useQuery<ProfileUser>({
-    queryKey: ['profile', targetUsername],
-    queryFn: () => usersApi.getProfile(targetUsername!),
-    enabled: !!targetUsername,
-    staleTime: 1000 * 60,
-  });
+  const [showComments, setShowComments] = useState(false);
+  const [bookmarked,   setBookmarked]   = useState(false);
+  const [editOpen,     setEditOpen]     = useState(false);
+  const [likePopping,  setLikePopping]  = useState(false);
 
-  const { data: posts = [], isLoading: postsLoading } = useQuery<Post[]>({
-    queryKey: ['user-posts', profile?.id],
-    queryFn: () => postsApi.getUserPosts(profile!.id),
-    enabled: !!profile?.id,
-    staleTime: 1000 * 60,
-  });
+  const author    = post.author;
+  const likes     = post._count?.likes    ?? 0;
+  const comments  = post._count?.comments ?? 0;
+  const time      = formatDistanceToNow(new Date(post.publishedAt), { addSuffix: true });
+  const isOwnPost = authUser?.id === post.author.id;
+  const typeMeta  = POST_TYPE_MAP[post.postType] ?? POST_TYPE_MAP.daily_win;
 
-  const { mutate: follow, isPending: isFollowingPending } = useMutation({
-    mutationFn: () => usersApi.follow(profile!.id),
+  const { mutate: deletePost, isPending: isDeleting } = useMutation({
+    mutationFn: () => postsApi.remove(post.id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['profile', targetUsername] });
-      toast.success(profile?.isPrivate ? 'Follow request sent' : 'Following!');
+      qc.invalidateQueries({ queryKey: ['feed'] });
+      qc.invalidateQueries({ queryKey: ['user-posts'] });
+      qc.invalidateQueries({ queryKey: ['explore-recent'] });
+      qc.invalidateQueries({ queryKey: ['search'] });
+      toast.success('Post deleted');
     },
-    onError: (error) => toast.error(getApiErrorMessage(error, { fallback: 'Could not follow this user.', action: 'follow this user' })),
+    onError: (error) =>
+      toast.error(getApiErrorMessage(error, { fallback: 'Could not delete post.', action: 'delete your post' })),
   });
 
-  const { mutate: unfollow, isPending: isUnfollowingPending } = useMutation({
-    mutationFn: () => usersApi.unfollow(profile!.id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['profile', targetUsername] });
-      toast.success('Unfollowed');
-    },
-    onError: (error) => toast.error(getApiErrorMessage(error, { fallback: 'Could not unfollow this user.', action: 'unfollow this user' })),
-  });
+  const handleLike = () => {
+    setLikePopping(true);
+    setTimeout(() => setLikePopping(false), 350);
+    toggleLike({ postId: post.id, liked: post.liked ?? false });
+  };
 
-  const { mutate: startChat, isPending: isStartingChat } = useMutation({
-    mutationFn: () => chatApi.createOrGetConversation(profile!.id),
-    onSuccess: conversation => {
-      qc.invalidateQueries({ queryKey: ['conversations'] });
-      navigate(`/chat?conversationId=${conversation.id}`);
-    },
-    onError: (error) => toast.error(getApiErrorMessage(error, { fallback: 'Could not open chat.', action: 'start the chat' })),
-  });
-
-  const user = profile || (isOwnProfile ? authUser : null);
-  if (!user) return null;
-
-  const streak = user.currentStreak || 0;
-  const avatar = user.avatarUrl || getDefaultAvatar(user.username);
-  const postCount = (profile?._count?.posts ?? posts.length) || 0;
-  const followerCount = profile?._count?.followers ?? 0;
-  const followingCount = profile?._count?.following ?? 0;
-  const isFollowPending = profile?.followStatus === 'pending';
-  const isBusy = isFollowingPending || isUnfollowingPending;
+  const handleShare = async () => {
+    const url = `${window.location.origin}/post/${post.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Check this out on 1% Better', url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copied!');
+      }
+    } catch {
+      toast.error('Failed to copy link.');
+    }
+  };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      {/* Cover */}
-      <div
-        className="h-36 relative"
-        style={{ background: 'linear-gradient(135deg, var(--color-accent-bg), var(--color-border))' }}
+    <>
+      <article
+        className="mb-4 overflow-hidden rounded-2xl transition-shadow"
+        style={{
+          background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)',
+        } as CSSProperties}
       >
-        {user.coverUrl && (
-          <img src={user.coverUrl} className="absolute inset-0 w-full h-full object-cover" alt="" />
-        )}
-        <div className="absolute -bottom-14 left-5">
-          <div className="relative inline-block">
+        {/* ── Header ─────────────────────────────────────────────── */}
+        <div className="flex items-start gap-3 px-5 pt-5 pb-4">
+          {/* Avatar */}
+          <Link to={`/profile/${author.username}`} className="shrink-0">
             <img
-              src={avatar}
-              className="w-28 h-28 rounded-full object-cover"
-              style={{ border: '4px solid var(--color-bg)' }}
-              alt={user.displayName}
+              src={author.avatarUrl || getDefaultAvatar(author.username)}
+              className="h-10 w-10 rounded-full object-cover ring-2"
+              style={{ ringColor: 'var(--color-border)' } as CSSProperties}
+              alt={author.displayName}
+              onError={e => { (e.target as HTMLImageElement).src = getDefaultAvatar(author.username); }}
             />
-            {isOwnProfile && (
-              <button
-                onClick={() => fileRef.current?.click()}
-                className="absolute bottom-1 right-1 w-7 h-7 rounded-full flex items-center justify-center transition-colors"
-                style={{ background: 'var(--color-accent)', color: '#fff' }}
-                title="Change photo"
+          </Link>
+
+          {/* Meta */}
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Link
+                to={`/profile/${author.username}`}
+                className="text-sm font-semibold transition-opacity hover:opacity-75"
+                style={{ color: 'var(--color-text)' }}
               >
-                <Edit2 size={12} />
-              </button>
-            )}
-            <input ref={fileRef} type="file" accept="image/*" hidden />
-          </div>
-        </div>
-      </div>
-
-      <div className="pt-18 px-5 pb-6" style={{ paddingTop: '4rem' }}>
-        {/* Top row */}
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
-              {user.displayName}
-            </h1>
-            <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-              @{user.username}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${getStreakBadgeClass(streak)}`}>
-              {getStreakLabel(streak)}
-            </span>
-            {isOwnProfile ? (
-              <button
-                onClick={() => setEditOpen(true)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                style={{
-                  border: '1px solid var(--color-border)',
-                  color: 'var(--color-text-muted)',
-                }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-accent)';
-                  (e.currentTarget as HTMLElement).style.color = 'var(--color-accent)';
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)';
-                  (e.currentTarget as HTMLElement).style.color = 'var(--color-text-muted)';
-                }}
-              >
-                Edit Profile
-              </button>
-            ) : (
-              <>
-                <button
-                  onClick={() => startChat()}
-                  disabled={isStartingChat}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors disabled:opacity-50"
-                  style={{
-                    border: '1px solid var(--color-border)',
-                    background: 'transparent',
-                    color: 'var(--color-text)',
-                  }}
-                >
-                  <MessageCircle size={13} />
-                  {isStartingChat ? 'Opening...' : 'Message'}
-                </button>
-                <button
-                  onClick={() => {
-                    if (profile?.isFollowing) {
-                      unfollow();
-                    } else {
-                      follow();
-                    }
-                  }}
-                  disabled={isBusy}
-                  className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors disabled:opacity-50"
-                  style={{
-                    background: profile?.isFollowing || isFollowPending ? 'transparent' : 'var(--color-accent)',
-                    color: profile?.isFollowing || isFollowPending ? 'var(--color-text)' : '#fff',
-                    border: '1px solid var(--color-accent)',
-                  }}
-                >
-                  {isBusy ? '...' : profile?.isFollowing ? 'Following' : isFollowPending ? 'Pending' : 'Follow'}
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Bio */}
-        {user.bio && (
-          <p className="text-sm mb-3 leading-relaxed" style={{ color: 'var(--color-text)' }}>
-            {user.bio}
-          </p>
-        )}
-
-        {/* Meta */}
-        <div className="flex flex-wrap gap-3 mb-4 text-xs" style={{ color: 'var(--color-text-muted)' }}>
-          {user.location && (
-            <span className="flex items-center gap-1">
-              <MapPin size={12} /> {user.location}
-            </span>
-          )}
-          {user.websiteUrl && (
-            <a
-              href={user.websiteUrl.startsWith('http') ? user.websiteUrl : `https://${user.websiteUrl}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 hover:underline"
-              style={{ color: 'var(--color-accent)' }}
-            >
-              <Globe size={12} /> {user.websiteUrl}
-            </a>
-          )}
-          {user.goalStatement && (
-            <span className="flex items-center gap-1">
-              <Target size={12} /> {user.goalStatement}
-            </span>
-          )}
-        </div>
-
-        {/* Focus areas */}
-        {(user.focusAreas || []).length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {(user.focusAreas || []).map(a => (
-              <span
-                key={a}
-                className="px-2.5 py-1 rounded-full text-xs font-medium capitalize"
-                style={{
-                  background: 'var(--color-accent-bg)',
-                  color: 'var(--color-accent)',
-                  border: '1px solid var(--color-accent-bg)',
-                }}
-              >
-                {a}
+                {author.displayName}
+              </Link>
+              <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                @{author.username}
               </span>
-            ))}
-          </div>
-        )}
+              {/* Dot separator */}
+              <span className="text-xs" style={{ color: 'var(--color-border)' }}>·</span>
+              <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                {time}
+              </span>
+            </div>
 
-        {/* Stats */}
-        <div
-          className="grid grid-cols-4 gap-1 rounded-xl p-3 mb-6"
-          style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
-        >
-          <div className="text-center p-2">
-            <div className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>{postCount}</div>
-            <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Posts</div>
+            {/* Post type + hashtag pills on same row */}
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+              {/* Type badge */}
+              <span
+                className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
+                style={{
+                  background: `${typeMeta.accent}1a`,
+                  color: typeMeta.accent,
+                  border: `1px solid ${typeMeta.accent}30`,
+                }}
+              >
+                {typeMeta.icon} {typeMeta.label}
+              </span>
+
+              {/* Hashtag pills (from post.hashtags array) */}
+              {post.hashtags?.slice(0, 3).map(tag => (
+                <span
+                  key={tag}
+                  className="rounded-full px-2 py-0.5 text-[11px] font-medium"
+                  style={{
+                    background: 'var(--color-hover)',
+                    color: 'var(--color-text-muted)',
+                    border: '1px solid var(--color-border)',
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
-          <button
-            className="text-center p-2 rounded-lg transition-colors"
-            onClick={() => setPeopleModal('followers')}
-            style={{ cursor: 'pointer' }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-hover)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-          >
-            <div className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>{followerCount}</div>
-            <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Followers</div>
-          </button>
-          <button
-            className="text-center p-2 rounded-lg transition-colors"
-            onClick={() => setPeopleModal('following')}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-hover)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-          >
-            <div className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>{followingCount}</div>
-            <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Following</div>
-          </button>
-          <div className="text-center p-2">
-            <div className="text-lg font-bold" style={{ color: 'var(--color-accent)' }}>{streak}🔥</div>
-            <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Streak</div>
+
+          {/* Streak badge — top right */}
+          <div className="shrink-0">
+            <StreakBadge streak={author.currentStreak || 0} />
           </div>
         </div>
 
-        {/* Posts */}
-        <div
-          className="text-xs font-bold uppercase tracking-widest mb-4"
-          style={{ color: 'var(--color-text-muted)' }}
-        >
-          Posts
-        </div>
-        {postsLoading ? (
-          <div className="space-y-3">
-            {[...Array(2)].map((_, i) => (
-              <div key={i} className="rounded-2xl p-5 animate-pulse h-28"
-                style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }} />
-            ))}
-          </div>
-        ) : posts.length === 0 ? (
-          <div className="text-center py-14" style={{ color: 'var(--color-text-muted)' }}>
-            <div className="text-5xl mb-4">🚀</div>
-            <div className="font-semibold">No posts yet</div>
-            <div className="text-sm mt-1 opacity-60">Share your first win!</div>
-          </div>
-        ) : (
-          posts.map(p => <PostCard key={p.id} post={p} />)
-        )}
-      </div>
+        {/* ── Content ────────────────────────────────────────────── */}
+        <div className="px-5 pb-4">
+          <p
+            className="text-[15px] leading-relaxed"
+            style={{ color: 'var(--color-text)' }}
+            dangerouslySetInnerHTML={{ __html: linkHashtags(post.content) }}
+          />
 
-      {editOpen && (
-        <EditProfileModal user={user as User} onClose={() => setEditOpen(false)} />
+          {/* Media grid */}
+          {post.mediaUrls && post.mediaUrls.length > 0 && (
+            <div
+              className="mt-3 overflow-hidden rounded-xl"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: post.mediaUrls.length === 1 ? '1fr' : '1fr 1fr',
+                gap: '2px',
+              }}
+            >
+              {post.mediaUrls.slice(0, 4).map((url, i) => (
+                <img
+                  key={i}
+                  src={url}
+                  className="h-52 w-full object-cover"
+                  alt=""
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── Owner controls ──────────────────────────────────────── */}
+        {isOwnPost && (
+          <div
+            className="flex justify-end gap-1.5 px-5 pb-3"
+          >
+            <button
+              onClick={() => setEditOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
+              style={{
+                color: 'var(--color-text-muted)',
+                background: 'var(--color-hover)',
+                border: '1px solid var(--color-border)',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}
+            >
+              <Pencil size={11} /> Edit
+            </button>
+            <button
+              onClick={() => window.confirm('Delete this post?') && deletePost()}
+              disabled={isDeleting}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all disabled:opacity-50"
+              style={{
+                color: 'var(--color-text-muted)',
+                background: 'var(--color-hover)',
+                border: '1px solid var(--color-border)',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.color = '#ef4444';
+                (e.currentTarget as HTMLElement).style.borderColor = 'rgba(239,68,68,0.3)';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.color = 'var(--color-text-muted)';
+                (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)';
+              }}
+            >
+              <Trash2 size={11} /> Delete
+            </button>
+          </div>
+        )}
+
+        {/* ── Action bar ──────────────────────────────────────────── */}
+        <div
+          className="flex items-center justify-between px-3 py-1"
+          style={{ borderTop: '1px solid var(--color-border)' }}
+        >
+          <div className="flex items-center">
+            {/* Like */}
+            <ActionBtn
+              onClick={handleLike}
+              active={post.liked}
+              activeColor="#ec4899"
+              title="Like"
+            >
+              <Heart
+                size={15}
+                fill={post.liked ? 'currentColor' : 'none'}
+                style={{
+                  transform: likePopping ? 'scale(1.35)' : 'scale(1)',
+                  transition: 'transform 0.2s cubic-bezier(.34,1.56,.64,1)',
+                }}
+              />
+              {likes > 0 && <span>{likes}</span>}
+            </ActionBtn>
+
+            {/* Comment */}
+            <ActionBtn
+              onClick={() => setShowComments(v => !v)}
+              active={showComments}
+              activeColor="#60a5fa"
+              title="Comments"
+            >
+              <MessageCircle size={15} />
+              {comments > 0 && <span>{comments}</span>}
+            </ActionBtn>
+
+            {/* Share */}
+            <ActionBtn onClick={handleShare} title="Share">
+              <Share2 size={15} />
+            </ActionBtn>
+          </div>
+
+          {/* Bookmark */}
+          <ActionBtn
+            onClick={() => setBookmarked(b => !b)}
+            active={bookmarked}
+            activeColor="#f59e0b"
+            title={bookmarked ? 'Unsave' : 'Save'}
+          >
+            <Bookmark size={15} fill={bookmarked ? 'currentColor' : 'none'} />
+          </ActionBtn>
+        </div>
+      </article>
+
+      {showComments && (
+        <CommentSection postId={post.id} post={post} onClose={() => setShowComments(false)} />
       )}
-      {peopleModal && (
-        <PeopleModal
-          title={peopleModal === 'followers' ? 'Followers' : 'Following'}
-          userId={user.id}
-          type={peopleModal}
-          onClose={() => setPeopleModal(null)}
-        />
-      )}
-    </div>
+      {editOpen && <EditPostModal post={post} onClose={() => setEditOpen(false)} />}
+    </>
   );
 }
