@@ -1,9 +1,12 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, MapPin, Globe, Target, Edit2, Users } from 'lucide-react';
+import { X, MapPin, Globe, Target, Edit2, Users, MessageCircle } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { usersApi, type UpdateProfilePayload } from '../api/users';
+import { chatApi } from '../api/chat';
 import { postsApi } from '../api/posts';
+import { getApiErrorMessage } from '../api/errors';
 import { getDefaultAvatar, getStreakBadgeClass, getStreakLabel } from '../lib/utils';
 import PostCard from '../components/post/PostCard';
 import StreakBadge from '../components/profile/StreakBadge';
@@ -34,7 +37,7 @@ function EditProfileModal({ user, onClose }: { user: User; onClose: () => void }
       toast.success('Profile updated ✓');
       onClose();
     },
-    onError: () => toast.error('Failed to update profile'),
+    onError: (error) => toast.error(getApiErrorMessage(error, { fallback: 'Failed to update profile.', action: 'save your profile' })),
   });
 
   const update = (key: keyof UpdateProfilePayload) =>
@@ -251,26 +254,57 @@ function PeopleModal({ title, userId, type, onClose }: {
 // ── Main ProfilePage ────────────────────────────────────────────────
 export default function ProfilePage() {
   const authUser = useAuthStore(s => s.user);
+  const { username } = useParams<{ username: string }>();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
   const [peopleModal, setPeopleModal] = useState<'followers' | 'following' | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const targetUsername = username || authUser?.username;
+  const isOwnProfile = !username || username === authUser?.username;
 
-  // Fetch the full profile from backend for up-to-date counts etc.
   const { data: profile } = useQuery<User>({
-    queryKey: ['profile', authUser?.username],
-    queryFn: () => usersApi.getProfile(authUser!.username),
-    enabled: !!authUser?.username,
+    queryKey: ['profile', targetUsername],
+    queryFn: () => usersApi.getProfile(targetUsername!),
+    enabled: !!targetUsername,
     staleTime: 1000 * 60,
   });
 
   const { data: posts = [], isLoading: postsLoading } = useQuery<Post[]>({
-    queryKey: ['user-posts', authUser?.id],
-    queryFn: () => postsApi.getUserPosts(authUser!.id),
-    enabled: !!authUser?.id,
+    queryKey: ['user-posts', profile?.id],
+    queryFn: () => postsApi.getUserPosts(profile!.id),
+    enabled: !!profile?.id,
     staleTime: 1000 * 60,
   });
 
-  const user = profile || authUser;
+  const { mutate: follow, isPending: isFollowingPending } = useMutation({
+    mutationFn: () => usersApi.follow(profile!.id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['profile', targetUsername] });
+      toast.success(profile?.isPrivate ? 'Follow request sent' : 'Following!');
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error, { fallback: 'Could not follow this user.', action: 'follow this user' })),
+  });
+
+  const { mutate: unfollow, isPending: isUnfollowingPending } = useMutation({
+    mutationFn: () => usersApi.unfollow(profile!.id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['profile', targetUsername] });
+      toast.success('Unfollowed');
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error, { fallback: 'Could not unfollow this user.', action: 'unfollow this user' })),
+  });
+
+  const { mutate: startChat, isPending: isStartingChat } = useMutation({
+    mutationFn: () => chatApi.createOrGetConversation(profile!.id),
+    onSuccess: conversation => {
+      qc.invalidateQueries({ queryKey: ['conversations'] });
+      navigate(`/chat?conversationId=${conversation.id}`);
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error, { fallback: 'Could not open chat.', action: 'start the chat' })),
+  });
+
+  const user = profile || (isOwnProfile ? authUser : null);
   if (!user) return null;
 
   const streak = user.currentStreak || 0;
@@ -278,6 +312,8 @@ export default function ProfilePage() {
   const postCount = (profile?._count?.posts ?? posts.length) || 0;
   const followerCount = profile?._count?.followers ?? 0;
   const followingCount = profile?._count?.following ?? 0;
+  const isFollowPending = profile?.followStatus === 'pending';
+  const isBusy = isFollowingPending || isUnfollowingPending;
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -297,14 +333,16 @@ export default function ProfilePage() {
               style={{ border: '4px solid var(--color-bg)' }}
               alt={user.displayName}
             />
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="absolute bottom-1 right-1 w-7 h-7 rounded-full flex items-center justify-center transition-colors"
-              style={{ background: 'var(--color-accent)', color: '#fff' }}
-              title="Change photo"
-            >
-              <Edit2 size={12} />
-            </button>
+            {isOwnProfile && (
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="absolute bottom-1 right-1 w-7 h-7 rounded-full flex items-center justify-center transition-colors"
+                style={{ background: 'var(--color-accent)', color: '#fff' }}
+                title="Change photo"
+              >
+                <Edit2 size={12} />
+              </button>
+            )}
             <input ref={fileRef} type="file" accept="image/*" hidden />
           </div>
         </div>
@@ -325,24 +363,60 @@ export default function ProfilePage() {
             <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${getStreakBadgeClass(streak)}`}>
               {getStreakLabel(streak)}
             </span>
-            <button
-              onClick={() => setEditOpen(true)}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-              style={{
-                border: '1px solid var(--color-border)',
-                color: 'var(--color-text-muted)',
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-accent)';
-                (e.currentTarget as HTMLElement).style.color = 'var(--color-accent)';
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)';
-                (e.currentTarget as HTMLElement).style.color = 'var(--color-text-muted)';
-              }}
-            >
-              Edit Profile
-            </button>
+            {isOwnProfile ? (
+              <button
+                onClick={() => setEditOpen(true)}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                style={{
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text-muted)',
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-accent)';
+                  (e.currentTarget as HTMLElement).style.color = 'var(--color-accent)';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)';
+                  (e.currentTarget as HTMLElement).style.color = 'var(--color-text-muted)';
+                }}
+              >
+                Edit Profile
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => startChat()}
+                  disabled={isStartingChat}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors disabled:opacity-50"
+                  style={{
+                    border: '1px solid var(--color-border)',
+                    background: 'transparent',
+                    color: 'var(--color-text)',
+                  }}
+                >
+                  <MessageCircle size={13} />
+                  {isStartingChat ? 'Opening...' : 'Message'}
+                </button>
+                <button
+                  onClick={() => {
+                    if (profile?.isFollowing) {
+                      unfollow();
+                    } else {
+                      follow();
+                    }
+                  }}
+                  disabled={isBusy}
+                  className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors disabled:opacity-50"
+                  style={{
+                    background: profile?.isFollowing || isFollowPending ? 'transparent' : 'var(--color-accent)',
+                    color: profile?.isFollowing || isFollowPending ? 'var(--color-text)' : '#fff',
+                    border: '1px solid var(--color-accent)',
+                  }}
+                >
+                  {isBusy ? '...' : profile?.isFollowing ? 'Following' : isFollowPending ? 'Pending' : 'Follow'}
+                </button>
+              </>
+            )}
           </div>
         </div>
 
