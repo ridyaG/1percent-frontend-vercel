@@ -15,6 +15,10 @@ import toast from 'react-hot-toast';
 import type { Post } from '../types/post';
 import type { User } from '../types/user';
 
+type ProfileUser = User & {
+  followStatus?: 'accepted' | 'pending' | null;
+};
+
 // ── Edit Profile Modal ──────────────────────────────────────────────
 function EditProfileModal({ user, onClose }: { user: User; onClose: () => void }) {
   const qc = useQueryClient();
@@ -263,7 +267,7 @@ export default function ProfilePage() {
   const targetUsername = username || authUser?.username;
   const isOwnProfile = !username || username === authUser?.username;
 
-  const { data: profile } = useQuery<User>({
+  const { data: profile } = useQuery<ProfileUser>({
     queryKey: ['profile', targetUsername],
     queryFn: () => usersApi.getProfile(targetUsername!),
     enabled: !!targetUsername,
