@@ -251,7 +251,7 @@ export default function ChatPage() {
         <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>Messages</h2>
+              <h2 className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>Active Conversations</h2>
               <p className="mt-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
                 Continue conversations without leaving your momentum.
               </p>
