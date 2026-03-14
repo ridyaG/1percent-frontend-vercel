@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Sparkles } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postsApi } from '../../api/posts';
+import { getApiErrorMessage } from '../../api/errors';
 import { useUIStore } from '../../store/uiStore';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../../store/authStore';
@@ -65,7 +66,7 @@ export default function ComposeModal() {
       close();
       toast.success(`🔥 Day ${post.author.currentStreak} — streak on!`, { duration: 3000 });
     },
-    onError: () => toast.error('Failed to post. Please try again.'),
+    onError: (error) => toast.error(getApiErrorMessage(error, { fallback: 'Failed to post. Please try again.', action: 'publish your post' })),
   });
 
   // ── handlePost defined with useCallback BEFORE the useEffect that uses it ──
