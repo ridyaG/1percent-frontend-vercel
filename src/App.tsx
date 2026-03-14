@@ -13,6 +13,7 @@ import StreaksPage from './pages/StreaksPage';
 import ChallengesPage from './pages/ChallengesPage';
 import ChatPage from './pages/ChatPage';
 import ChatErrorBoundary from './components/chat/ChatErrorBoundary';
+import NotFoundPage from './pages/NotFoundPage';
 import { useThemeStore } from './store/themeStore';
 import { useAuthStore } from './store/authStore';
 
@@ -42,6 +43,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="*" element={<NotFoundPage />} />
           <Route
             path="/"
             element={
@@ -58,6 +60,7 @@ export default function App() {
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="profile/:username" element={<ProfilePage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
