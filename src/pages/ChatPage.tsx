@@ -4,6 +4,7 @@ import { ArrowLeft, MessageCircle, Pencil, Send, Trash2, X, Plus } from 'lucide-
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { chatApi, type Conversation, type DirectMessage } from '../api/chat';
 import { usersApi } from '../api/users';
+import { getApiErrorMessage } from '../api/errors';
 import { useAuthStore } from '../store/authStore';
 import { getSharedSocket } from '../hooks/useSocket';
 import { useIsMobile } from '../hooks/useMediaQuery';
@@ -166,7 +167,7 @@ export default function ChatPage() {
       qc.invalidateQueries({ queryKey: ['conversations'] });
       toast.success('Message updated');
     },
-    onError: () => toast.error('Could not update message'),
+    onError: (error) => toast.error(getApiErrorMessage(error, { fallback: 'Could not update message.', action: 'update the message' })),
   });
 
   const { mutate: deleteMessage, isPending: isDeletingMessage } = useMutation({
@@ -176,7 +177,7 @@ export default function ChatPage() {
       qc.invalidateQueries({ queryKey: ['conversations'] });
       toast.success('Message deleted');
     },
-    onError: () => toast.error('Could not delete message'),
+    onError: (error) => toast.error(getApiErrorMessage(error, { fallback: 'Could not delete message.', action: 'delete the message' })),
   });
 
   const { mutate: deleteConversation, isPending: isDeletingConversation } = useMutation({
@@ -191,7 +192,7 @@ export default function ChatPage() {
       setSearchParams({}, { replace: true });
       toast.success('Conversation deleted');
     },
-    onError: () => toast.error('Could not delete conversation'),
+    onError: (error) => toast.error(getApiErrorMessage(error, { fallback: 'Could not delete conversation.', action: 'delete the conversation' })),
   });
 
   const { mutate: startConversation } = useMutation({
@@ -205,9 +206,9 @@ export default function ChatPage() {
       setPendingStartUserId(null);
       setSearchParams({ conversationId: conversation.id });
     },
-    onError: () => {
+    onError: (error) => {
       setPendingStartUserId(null);
-      toast.error('Could not start chat');
+      toast.error(getApiErrorMessage(error, { fallback: 'Could not start chat.', action: 'start the chat' }));
     },
   });
 
@@ -251,7 +252,7 @@ export default function ChatPage() {
         <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>Active Conversations</h2>
+              <h2 className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>Messages</h2>
               <p className="mt-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
                 Continue conversations without leaving your momentum.
               </p>
