@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authApi } from '../api/auth';
+import { getApiErrorMessage } from '../api/errors';
 import { useAuthStore } from '../store/authStore';
 import { Eye, EyeOff, ArrowRight, Flame, Check } from 'lucide-react';
 
@@ -54,8 +55,7 @@ export default function RegisterPage() {
       login(data.user, data.accessToken, data.refreshToken);
       navigate('/');
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { error?: string } } };
-      setError(e.response?.data?.error || 'Registration failed. Please try again.');
+      setError(getApiErrorMessage(err, { fallback: 'Registration failed. Please try again.', action: 'create your account' }));
     } finally {
       setLoading(false);
     }
@@ -102,146 +102,145 @@ export default function RegisterPage() {
           </div>
 
           <div className="w-full max-w-sm justify-self-center">
-        <div className="text-center mb-8">
-          <div
-            className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
-            style={{
-              background: 'var(--color-accent-bg)',
-              border: '1px solid rgba(255,122,24,0.25)',
-            }}
-          >
-            <Flame size={28} style={{ color: 'var(--color-accent)' }} />
-          </div>
-          <h1
-            className="type-section font-bold"
-            style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-text)' }}
-          >
-            Start your journey
-          </h1>
-          <p
-            className="text-sm mt-1.5"
-            style={{ color: 'var(--color-text-muted)' }}
-          >
-            Join thousands improving 1% every day
-          </p>
-        </div>
-
-        <div
-          className="rounded-2xl p-7"
-          style={{
-            background: 'var(--gradient-surface)',
-            border: '1px solid var(--color-border)',
-            boxShadow: 'var(--shadow-lg)',
-            backdropFilter: 'blur(16px)',
-          }}
-        >
-          {error && (
-            <div
-              className="flex items-start gap-2 text-sm px-4 py-3 rounded-xl mb-5"
-              style={{
-                background: 'rgba(255,64,64,0.1)',
-                border: '1px solid rgba(255,64,64,0.2)',
-                color: '#ff7070',
-              }}
-            >
-              <span className="mt-0.5">⚠</span> {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {fields.map((f) => (
-              <div key={f.key}>
-                <label
-                  className="block text-xs font-semibold uppercase tracking-wider mb-1.5"
-                  style={{ color: 'var(--color-text-muted)' }}
-                >
-                  {f.label}
-                </label>
-                <input
-                  type={f.type}
-                  value={form[f.key]}
-                  onChange={update(f.key)}
-                  placeholder={f.placeholder}
-                  required
-                  minLength={f.key === 'username' ? 3 : undefined}
-                  maxLength={f.key === 'username' ? 30 : undefined}
-                  autoComplete={
-                    f.key === 'email' ? 'email' :
-                    f.key === 'displayName' ? 'name' : 'username'
-                  }
-                  className="input-base"
-                />
-                {f.hint && (
-                  <p className="text-xs mt-1" style={{ color: 'var(--color-text-subtle)' }}>
-                    {f.hint}
-                  </p>
-                )}
+            <div className="text-center mb-8">
+              <div
+                className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
+                style={{
+                  background: 'var(--color-accent-bg)',
+                  border: '1px solid rgba(255,122,24,0.25)',
+                }}
+              >
+                <Flame size={28} style={{ color: 'var(--color-accent)' }} />
               </div>
-            ))}
-
-            {/* Password */}
-            <div>
-              <label
-                className="block text-xs font-semibold uppercase tracking-wider mb-1.5"
+              <h1
+                className="type-section font-bold"
+                style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-text)' }}
+              >
+                Start your journey
+              </h1>
+              <p
+                className="text-sm mt-1.5"
                 style={{ color: 'var(--color-text-muted)' }}
               >
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPass ? 'text' : 'password'}
-                  value={form.password}
-                  onChange={update('password')}
-                  placeholder="8+ characters"
-                  required
-                  minLength={8}
-                  autoComplete="new-password"
-                  className="input-base pr-11"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-xl"
-                  style={{ color: 'var(--color-text-muted)', width: '36px', height: '36px' }}
-                >
-                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              <PasswordStrength password={form.password} />
+                Join thousands improving 1% every day
+              </p>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn btn-primary w-full mt-2 py-3"
-              style={{ borderRadius: '12px' }}
+            <div
+              className="rounded-2xl p-7"
+              style={{
+                background: 'var(--gradient-surface)',
+                border: '1px solid var(--color-border)',
+                boxShadow: 'var(--shadow-lg)',
+                backdropFilter: 'blur(16px)',
+              }}
             >
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                  </svg>
-                  Creating account...
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  Create Account <ArrowRight size={16} />
-                </span>
+              {error && (
+                <div
+                  className="flex items-start gap-2 text-sm px-4 py-3 rounded-xl mb-5"
+                  style={{
+                    background: 'rgba(255,64,64,0.1)',
+                    border: '1px solid rgba(255,64,64,0.2)',
+                    color: '#ff7070',
+                  }}
+                >
+                  <span className="mt-0.5">⚠</span> {error}
+                </div>
               )}
-            </button>
-          </form>
-        </div>
 
-        <p
-          className="text-sm text-center mt-6"
-          style={{ color: 'var(--color-text-muted)' }}
-        >
-          Already have an account?{' '}
-          <Link to="/login" style={{ color: 'var(--color-accent)', fontWeight: 600 }} className="hover:underline">
-            Log in
-          </Link>
-        </p>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {fields.map((f) => (
+                  <div key={f.key}>
+                    <label
+                      className="block text-xs font-semibold uppercase tracking-wider mb-1.5"
+                      style={{ color: 'var(--color-text-muted)' }}
+                    >
+                      {f.label}
+                    </label>
+                    <input
+                      type={f.type}
+                      value={form[f.key]}
+                      onChange={update(f.key)}
+                      placeholder={f.placeholder}
+                      required
+                      minLength={f.key === 'username' ? 3 : undefined}
+                      maxLength={f.key === 'username' ? 30 : undefined}
+                      autoComplete={
+                        f.key === 'email' ? 'email' :
+                        f.key === 'displayName' ? 'name' : 'username'
+                      }
+                      className="input-base"
+                    />
+                    {f.hint && (
+                      <p className="text-xs mt-1" style={{ color: 'var(--color-text-subtle)' }}>
+                        {f.hint}
+                      </p>
+                    )}
+                  </div>
+                ))}
+
+                <div>
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-wider mb-1.5"
+                    style={{ color: 'var(--color-text-muted)' }}
+                  >
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPass ? 'text' : 'password'}
+                      value={form.password}
+                      onChange={update('password')}
+                      placeholder="8+ characters"
+                      required
+                      minLength={8}
+                      autoComplete="new-password"
+                      className="input-base pr-11"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPass(!showPass)}
+                      className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-xl"
+                      style={{ color: 'var(--color-text-muted)', width: '36px', height: '36px' }}
+                    >
+                      {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  <PasswordStrength password={form.password} />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn btn-primary w-full mt-2 py-3"
+                  style={{ borderRadius: '12px' }}
+                >
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      </svg>
+                      Creating account...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      Create Account <ArrowRight size={16} />
+                    </span>
+                  )}
+                </button>
+              </form>
+            </div>
+
+            <p
+              className="text-sm text-center mt-6"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              Already have an account?{' '}
+              <Link to="/login" style={{ color: 'var(--color-accent)', fontWeight: 600 }} className="hover:underline">
+                Log in
+              </Link>
+            </p>
           </div>
         </div>
       </div>
