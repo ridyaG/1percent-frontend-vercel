@@ -1,14 +1,91 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, MessageCircle, Pencil, Send, Trash2 } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Pencil, Send, Trash2, X, Plus } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { chatApi, type Conversation, type DirectMessage } from '../api/chat';
+import { usersApi } from '../api/users';
 import { useAuthStore } from '../store/authStore';
 import { getSharedSocket } from '../hooks/useSocket';
 import { useIsMobile } from '../hooks/useMediaQuery';
 import { getDefaultAvatar } from '../lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
+import type { User } from '../types/user';
+
+function StartConversationModal({
+  users,
+  isLoading,
+  onClose,
+  onStart,
+  pendingUserId,
+}: {
+  users: User[];
+  isLoading: boolean;
+  onClose: () => void;
+  onStart: (user: User) => void;
+  pendingUserId?: string | null;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.68)' }}
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        className="w-full max-w-md overflow-hidden rounded-3xl"
+        style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+      >
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
+          <div>
+            <div className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>New message</div>
+            <div className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Pick someone to start a conversation.</div>
+          </div>
+          <button onClick={onClose} style={{ color: 'var(--color-text-muted)' }}>
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="max-h-[420px] overflow-y-auto p-3">
+          {isLoading ? (
+            <div className="px-3 py-8 text-center text-sm" style={{ color: 'var(--color-text-muted)' }}>Loading suggestions...</div>
+          ) : users.length === 0 ? (
+            <div className="px-3 py-8 text-center text-sm" style={{ color: 'var(--color-text-muted)' }}>No suggested users available yet.</div>
+          ) : (
+            users.map(user => (
+              <button
+                key={user.id}
+                onClick={() => onStart(user)}
+                disabled={pendingUserId === user.id}
+                className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors disabled:opacity-50"
+                style={{ borderBottom: '1px solid var(--color-border)' }}
+              >
+                <img
+                  src={user.avatarUrl || getDefaultAvatar(user.username)}
+                  className="h-11 w-11 rounded-full object-cover"
+                  alt={user.displayName}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                    {user.displayName}
+                  </div>
+                  <div className="truncate text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                    @{user.username}
+                  </div>
+                </div>
+                <span
+                  className="rounded-full px-3 py-1 text-xs font-semibold"
+                  style={{ background: 'var(--color-accent-bg)', color: 'var(--color-accent)' }}
+                >
+                  {pendingUserId === user.id ? 'Opening...' : 'Message'}
+                </span>
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function ChatPage() {
   const authUser = useAuthStore(s => s.user);
@@ -19,6 +96,8 @@ export default function ChatPage() {
   const [draft, setDraft] = useState('');
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState('');
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [pendingStartUserId, setPendingStartUserId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const requestedConversationId = searchParams.get('conversationId');
 
@@ -29,6 +108,14 @@ export default function ChatPage() {
   } = useQuery<Conversation[]>({
     queryKey: ['conversations'],
     queryFn: chatApi.getConversations,
+  });
+
+  const {
+    data: suggestedUsers = [],
+    isLoading: suggestionsLoading,
+  } = useQuery<User[]>({
+    queryKey: ['chat-suggestions'],
+    queryFn: usersApi.getSuggestions,
   });
 
   const activeId = requestedConversationId ?? conversations[0]?.id ?? null;
@@ -107,6 +194,23 @@ export default function ChatPage() {
     onError: () => toast.error('Could not delete conversation'),
   });
 
+  const { mutate: startConversation } = useMutation({
+    mutationFn: (user: User) => {
+      setPendingStartUserId(user.id);
+      return chatApi.createOrGetConversation(user.id);
+    },
+    onSuccess: conversation => {
+      qc.invalidateQueries({ queryKey: ['conversations'] });
+      setComposeOpen(false);
+      setPendingStartUserId(null);
+      setSearchParams({ conversationId: conversation.id });
+    },
+    onError: () => {
+      setPendingStartUserId(null);
+      toast.error('Could not start chat');
+    },
+  });
+
   const getOtherParticipant = (conversation: Conversation) =>
     conversation.participants.find(participant => participant.userId !== authUser?.id)?.user;
 
@@ -137,25 +241,83 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-var(--topbar-height))] max-w-6xl flex-col md:flex-row">
-      {showConversationList && (
-      <aside
+    <>
+      <div className="mx-auto flex min-h-[calc(100vh-var(--topbar-height))] max-w-6xl flex-col md:flex-row">
+        {showConversationList && (
+        <aside
         className="w-full md:w-[320px] md:border-r"
         style={{ borderColor: 'var(--color-border)', background: 'var(--gradient-surface)' }}
       >
         <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
-          <h2 className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>Messages</h2>
-          <p className="mt-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-            Continue conversations without leaving your momentum.
-          </p>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>Messages</h2>
+              <p className="mt-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                Continue conversations without leaving your momentum.
+              </p>
+            </div>
+            <button
+              onClick={() => setComposeOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-semibold"
+              style={{ background: 'var(--color-accent)', color: '#fff' }}
+            >
+              <Plus size={13} />
+              New
+            </button>
+          </div>
         </div>
 
         <div className="max-h-[42vh] overflow-y-auto md:max-h-[calc(100vh-var(--topbar-height)-89px)]">
           {conversations.length === 0 ? (
-            <div className="px-5 py-14 text-center" style={{ color: 'var(--color-text-muted)' }}>
+            <div className="px-5 py-8 text-center" style={{ color: 'var(--color-text-muted)' }}>
               <MessageCircle size={34} className="mx-auto mb-3 opacity-30" />
               <div className="font-semibold">No conversations yet</div>
-              <div className="mt-1 text-sm">Start from someone’s profile with the Message button.</div>
+              <div className="mt-1 text-sm">Start here with suggested people.</div>
+              <button
+                onClick={() => setComposeOpen(true)}
+                className="mt-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold"
+                style={{ background: 'var(--color-accent)', color: '#fff' }}
+              >
+                <Plus size={14} />
+                New message
+              </button>
+
+              <div className="mt-6 text-left">
+                <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--color-secondary)' }}>
+                  Suggested users
+                </div>
+                <div className="space-y-2">
+                  {(suggestedUsers || []).slice(0, 4).map(user => (
+                    <button
+                      key={user.id}
+                      onClick={() => startConversation(user)}
+                      disabled={pendingStartUserId === user.id}
+                      className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors disabled:opacity-50"
+                      style={{
+                        background: 'rgba(255,255,255,0.02)',
+                        border: '1px solid var(--color-border)',
+                      }}
+                    >
+                      <img
+                        src={user.avatarUrl || getDefaultAvatar(user.username)}
+                        className="h-10 w-10 rounded-full object-cover"
+                        alt={user.displayName}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                          {user.displayName}
+                        </div>
+                        <div className="truncate text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                          @{user.username}
+                        </div>
+                      </div>
+                      <span className="text-xs font-semibold" style={{ color: 'var(--color-accent)' }}>
+                        {pendingStartUserId === user.id ? 'Opening...' : 'Message'}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           ) : (
             conversations.map(conversation => {
@@ -194,11 +356,11 @@ export default function ChatPage() {
             })
           )}
         </div>
-      </aside>
-      )}
+        </aside>
+        )}
 
-      {showConversationThread && (
-      <section className="flex min-h-[50vh] flex-1 flex-col">
+        {showConversationThread && (
+        <section className="flex min-h-[50vh] flex-1 flex-col">
         {activeId && activeConversation ? (
           <>
             <div
@@ -390,8 +552,19 @@ export default function ChatPage() {
             <div className="text-base font-semibold">Select a conversation to start chatting</div>
           </div>
         )}
-      </section>
+        </section>
+        )}
+      </div>
+
+      {composeOpen && (
+        <StartConversationModal
+          users={suggestedUsers}
+          isLoading={suggestionsLoading}
+          onClose={() => setComposeOpen(false)}
+          onStart={user => startConversation(user)}
+          pendingUserId={pendingStartUserId}
+        />
       )}
-    </div>
+    </>
   );
 }
