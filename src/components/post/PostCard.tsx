@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { Heart, MessageCircle, Share2, Bookmark, Pencil, Trash2, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -175,105 +175,171 @@ export default function PostCard({ post }: { post: Post }) {
   return (
     <>
       <article
-        className="card mb-4 p-5 animate-fade-in"
-        style={{ borderRadius: 'var(--radius-xl)' }}
+        className="card mb-5 overflow-hidden animate-fade-in"
+        style={{
+          borderRadius: 'calc(var(--radius-xl) + 4px)',
+          background:
+            'linear-gradient(180deg, color-mix(in srgb, var(--color-card) 88%, white 12%) 0%, color-mix(in srgb, var(--color-surface) 94%, transparent) 100%)',
+          boxShadow: '0 24px 48px rgba(2, 6, 23, 0.16)',
+        }}
       >
-        <div className="flex items-start gap-3 mb-3">
-          <Link to={`/profile/${author.username}`}>
-            <img
-              src={author.avatarUrl || getDefaultAvatar(author.username)}
-              className="avatar avatar-md mt-0.5"
-              alt={author.displayName}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = getDefaultAvatar(author.username);
-              }}
-            />
-          </Link>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <Link to={`/profile/${author.username}`} className="flex items-center gap-1.5 flex-wrap min-w-0">
-                <span
-                  className="font-semibold text-sm"
-                  style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}
-                >
-                  {author.displayName}
-                </span>
-                <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                  @{author.username}
-                </span>
-              </Link>
-            </div>
-            <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-subtle)' }}>
-              {time}
+        <div
+          className="px-5 py-4 sm:px-6"
+          style={{
+            background:
+              'radial-gradient(circle at top right, color-mix(in srgb, var(--color-accent) 14%, transparent), transparent 34%)',
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <Link to={`/profile/${author.username}`}>
+              <img
+                src={author.avatarUrl || getDefaultAvatar(author.username)}
+                className="avatar avatar-md mt-0.5 ring-2"
+                style={{ boxShadow: '0 10px 24px rgba(255,122,24,0.14)', border: '2px solid var(--color-accent-bg)' } as CSSProperties}
+                alt={author.displayName}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = getDefaultAvatar(author.username);
+                }}
+              />
+            </Link>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Link to={`/profile/${author.username}`} className="flex items-center gap-2 min-w-0">
+                      <span
+                        className="truncate text-[1.05rem] font-semibold"
+                        style={{ color: 'var(--color-text)', fontFamily: "'Syne', sans-serif" }}
+                      >
+                        {author.displayName}
+                      </span>
+                      <span className="truncate text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                        @{author.username}
+                      </span>
+                    </Link>
+                  </div>
+                  <div className="mt-1 text-xs tracking-wide" style={{ color: 'var(--color-text-subtle)' }}>
+                    {time}
+                  </div>
+                </div>
+
+                <div className="shrink-0">
+                  <StreakBadge streak={author.currentStreak || 0} />
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <PostTypeBadge type={post.postType} />
+                {post.hashtags && post.hashtags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {post.hashtags.slice(0, 3).map(tag => (
+                      <span
+                        key={tag}
+                        className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                        style={{
+                          background: 'rgba(255,255,255,0.04)',
+                          color: 'var(--color-secondary)',
+                          border: '1px solid var(--color-border)',
+                        }}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-          <StreakBadge streak={author.currentStreak || 0} />
         </div>
 
-        <div className="mb-3">
-          <PostTypeBadge type={post.postType} />
+        <div className="px-5 pb-5 sm:px-6">
+          <div
+            className="rounded-[24px] px-4 py-4 sm:px-5"
+            style={{
+              background: 'color-mix(in srgb, var(--color-surface) 74%, white 26%)',
+              border: '1px solid color-mix(in srgb, var(--color-border) 80%, white 20%)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
+            }}
+          >
+            <p
+              className="text-[15px] leading-8"
+              style={{ color: 'var(--color-text)' }}
+              dangerouslySetInnerHTML={{ __html: linkHashtags(post.content) }}
+            />
+          </div>
+
+          {isOwnPost && (
+            <div className="mt-4 flex justify-end gap-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              <button
+                onClick={() => setEditOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors"
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid var(--color-border)',
+                }}
+              >
+                <Pencil size={12} />
+                Edit
+              </button>
+              <button
+                onClick={() => {
+                  if (window.confirm('Delete this post?')) {
+                    deletePost();
+                  }
+                }}
+                disabled={isDeleting}
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors disabled:opacity-50"
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid var(--color-border)',
+                }}
+              >
+                <Trash2 size={12} />
+                Delete
+              </button>
+            </div>
+          )}
         </div>
 
-        <p
-          className="text-sm leading-relaxed mb-4"
-          style={{ color: 'var(--color-text)', lineHeight: '1.72' }}
-          dangerouslySetInnerHTML={{ __html: linkHashtags(post.content) }}
-        />
-
-        <div className="divider mb-3" />
-
-        {isOwnPost && (
-          <div className="mb-3 flex justify-end gap-3 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+        <div
+          className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5"
+          style={{
+            borderTop: '1px solid color-mix(in srgb, var(--color-border) 80%, white 20%)',
+            background: 'color-mix(in srgb, var(--color-surface-2) 76%, transparent)',
+          }}
+        >
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => setEditOpen(true)}
-              className="inline-flex items-center gap-1.5"
+              onClick={() => toggleLike({ postId: post.id, liked: post.liked ?? false })}
+              className={`post-action ${post.liked ? 'liked' : ''}`}
+              style={{ minWidth: '58px', justifyContent: 'center' }}
             >
-              <Pencil size={12} />
-              Edit
+              <Heart
+                size={16}
+                fill={post.liked ? 'currentColor' : 'none'}
+                style={{ transition: 'transform 0.15s' }}
+              />
+              <span>{likes > 0 ? likes : ''}</span>
             </button>
+
             <button
-              onClick={() => {
-                if (window.confirm('Delete this post?')) {
-                  deletePost();
-                }
-              }}
-              disabled={isDeleting}
-              className="inline-flex items-center gap-1.5 disabled:opacity-50"
+              onClick={() => setShowComments(v => !v)}
+              className={`post-action ${showComments ? 'active' : ''}`}
+              style={{ minWidth: '58px', justifyContent: 'center' }}
             >
-              <Trash2 size={12} />
-              Delete
+              <MessageCircle size={16} />
+              <span>{comments > 0 ? comments : ''}</span>
+            </button>
+
+            <button onClick={handleShare} className="post-action" style={{ minWidth: '44px', justifyContent: 'center' }}>
+              <Share2 size={16} />
             </button>
           </div>
-        )}
-
-        <div className="flex items-center">
-          <button
-            onClick={() => toggleLike({ postId: post.id, liked: post.liked ?? false })}
-            className={`post-action ${post.liked ? 'liked' : ''}`}
-          >
-            <Heart
-              size={16}
-              fill={post.liked ? 'currentColor' : 'none'}
-              style={{ transition: 'transform 0.15s' }}
-            />
-            <span>{likes > 0 ? likes : ''}</span>
-          </button>
-
-          <button
-            onClick={() => setShowComments(v => !v)}
-            className={`post-action ${showComments ? 'active' : ''}`}
-          >
-            <MessageCircle size={16} />
-            <span>{comments > 0 ? comments : ''}</span>
-          </button>
-
-          <button onClick={handleShare} className="post-action">
-            <Share2 size={16} />
-          </button>
 
           <button
             onClick={() => setBookmarked(b => !b)}
-            className={`post-action ml-auto ${bookmarked ? 'active' : ''}`}
+            className={`post-action ${bookmarked ? 'active' : ''}`}
+            style={{ minWidth: '44px', justifyContent: 'center' }}
           >
             <Bookmark
               size={16}
