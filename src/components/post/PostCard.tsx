@@ -7,6 +7,7 @@ import { useLike } from '../../hooks/useLike';
 import StreakBadge from '../profile/StreakBadge';
 import CommentSection from './CommentSection';
 import { postsApi } from '../../api/posts';
+import { getApiErrorMessage } from '../../api/errors';
 import { useAuthStore } from '../../store/authStore';
 import type { Post } from '../../types/post';
 import { getDefaultAvatar } from '../../lib/utils';
@@ -65,7 +66,7 @@ function EditPostModal({
       toast.success('Post updated');
       onClose();
     },
-    onError: () => toast.error('Could not update post'),
+    onError: (error) => toast.error(getApiErrorMessage(error, { fallback: 'Could not update post.', action: 'update your post' })),
   });
 
   return (
@@ -157,7 +158,7 @@ export default function PostCard({ post }: { post: Post }) {
       qc.invalidateQueries({ queryKey: ['search'] });
       toast.success('Post deleted');
     },
-    onError: () => toast.error('Could not delete post'),
+    onError: (error) => toast.error(getApiErrorMessage(error, { fallback: 'Could not delete post.', action: 'delete your post' })),
   });
 
   const handleShare = async () => {
