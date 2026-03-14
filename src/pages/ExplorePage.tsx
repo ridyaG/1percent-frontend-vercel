@@ -4,6 +4,7 @@ import { Search, TrendingUp, Hash, X, Compass, Sparkles, MessageCircle } from 'l
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { chatApi } from '../api/chat';
+import { getApiErrorMessage } from '../api/errors';
 import PostCard from '../components/post/PostCard';
 import { getDefaultAvatar } from '../lib/utils';
 import type { Post } from '../types/post';
@@ -31,7 +32,7 @@ function UserCard({ user }: { user: UserResult }) {
       qc.invalidateQueries({ queryKey: ['conversations'] });
       navigate(`/chat?conversationId=${conversation.id}`);
     },
-    onError: () => toast.error('Could not start chat'),
+    onError: (error) => toast.error(getApiErrorMessage(error, { fallback: 'Could not start chat.', action: 'start the chat' })),
   });
 
   return (
