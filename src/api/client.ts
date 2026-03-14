@@ -1,7 +1,10 @@
 import axios, { AxiosError, type AxiosRequestConfig } from "axios";
+import { normalizeApiError } from "./errors";
 
+const apiBaseUrl = import.meta.env.VITE_API_URL || "/api/v1";
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "/api/v1",
+  baseURL: apiBaseUrl,
+  withCredentials: true,
   timeout: 10000,
   headers: { "Content-Type": "application/json" },
 });
@@ -44,12 +47,17 @@ api.interceptors.response.use(
 
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
+    const requestUrl = originalRequest?.url || "";
+    const isAuthRequest =
+      requestUrl.includes("/auth/login") ||
+      requestUrl.includes("/auth/register") ||
+      requestUrl.includes("/auth/refresh");
 
     if (!originalRequest) {
-      return Promise.reject(error);
+      return Promise.reject(normalizeApiError(error));
     }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest) {
       if (isRefreshing) {
         return new Promise<string | null>((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -72,7 +80,7 @@ api.interceptors.response.use(
         }
 
         const { data } = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh`,
+          `${apiBaseUrl}/auth/refresh`,
           { refreshToken }
         );
 
@@ -93,15 +101,15 @@ api.interceptors.response.use(
         processQueue(refreshError as Error, null);
 
         sessionStorage.clear();
-        window.location.href = "/login";
+        window.location.assign("/login");
 
-        return Promise.reject(refreshError);
+        return Promise.reject(normalizeApiError(refreshError, { action: "refresh your session" }));
       } finally {
         isRefreshing = false;
       }
     }
 
-    return Promise.reject(error);
+    return Promise.reject(normalizeApiError(error));
   }
 );
 
