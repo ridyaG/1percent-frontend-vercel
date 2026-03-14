@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow, format, differenceInDays } from 'date-fns';
 import { Users, Calendar, Target, X, ChevronRight, ArrowLeft, Trophy, Sparkles, Plus } from 'lucide-react';
 import api from '../api/client';
+import { getApiErrorMessage } from '../api/errors';
 import { useAuthStore } from '../store/authStore';
 import { getDefaultAvatar } from '../lib/utils';
 import PostCard from '../components/post/PostCard';
@@ -68,7 +69,7 @@ function CreateChallengeModal({ onClose }: { onClose: () => void }) {
       toast.success('Challenge created!');
       onClose();
     },
-    onError: () => toast.error('Failed to create challenge.'),
+    onError: (error) => toast.error(getApiErrorMessage(error, { fallback: 'Failed to create challenge.', action: 'create the challenge' })),
   });
 
   const update = (f: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
