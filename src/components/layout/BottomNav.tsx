@@ -26,12 +26,12 @@ export default function BottomNav() {
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
       style={{
-        background: 'color-mix(in srgb, var(--color-bg) 74%, transparent)',
-        backdropFilter: 'blur(18px)',
-        WebkitBackdropFilter: 'blur(18px)',
+        background: 'color-mix(in srgb, var(--color-bg) 80%, transparent)',
+        backdropFilter: 'blur(22px)',
+        WebkitBackdropFilter: 'blur(22px)',
         borderTop: '1px solid rgba(169, 190, 255, 0.08)',
         paddingBottom: 'env(safe-area-inset-bottom)',
-        boxShadow: '0 -12px 32px rgba(2, 6, 23, 0.28)',
+        boxShadow: '0 -14px 32px rgba(2, 6, 23, 0.22)',
       }}
     >
       <div className="mx-auto flex h-[var(--bottom-nav-height)] max-w-[640px] items-center justify-around gap-1 px-2">
@@ -42,8 +42,9 @@ export default function BottomNav() {
                 className="relative flex min-w-[64px] flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2"
                 style={{
                   color: isActive ? 'var(--color-text)' : 'var(--color-text-muted)',
-                  background: isActive ? 'linear-gradient(180deg, rgba(255,122,24,0.2), rgba(255,179,71,0.08))' : 'transparent',
+                  background: isActive ? 'linear-gradient(180deg, rgba(255,122,24,0.22), rgba(255,179,71,0.08))' : 'transparent',
                   minHeight: '52px',
+                  boxShadow: isActive ? '0 10px 22px rgba(255,122,24,0.12)' : 'none',
                 }}
               >
                 <Icon
