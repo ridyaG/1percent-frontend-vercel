@@ -60,24 +60,26 @@ export default function Sidebar() {
                     transition-transform duration-300 ease-in-out md:translate-x-0
                     ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{
-          background: 'var(--gradient-surface)',
+          background:
+            'linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 84%, white 16%) 0%, color-mix(in srgb, var(--color-surface-2) 92%, black 8%) 100%)',
           borderRight: '1px solid var(--color-border)',
-          boxShadow: '20px 0 40px rgba(2, 6, 23, 0.26)',
+          boxShadow: '24px 0 48px rgba(2, 6, 23, 0.22)',
+          backdropFilter: 'blur(18px)',
         }}
       >
-        <div className="px-5 pt-6 pb-4 flex items-center gap-2.5">
+        <div className="px-5 pt-6 pb-5 flex items-center gap-3">
           <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: 'var(--gradient-brand)', boxShadow: '0 0 18px rgba(255,122,24,0.28)' }}
+            className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
+            style={{ background: 'var(--gradient-brand)', boxShadow: '0 12px 28px rgba(255,122,24,0.24)' }}
           >
-            <Flame size={18} color="#fff" />
+            <Flame size={19} color="#fff" />
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.22em]" style={{ color: 'var(--color-secondary)' }}>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.26em]" style={{ color: 'var(--color-secondary)' }}>
               Build daily
             </div>
             <span
-              className="text-lg font-bold tracking-tight"
+              className="text-[1.2rem] font-bold tracking-tight"
               style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-text)' }}
             >
               1<span style={{ color: 'var(--color-accent)' }}>%</span> Better
@@ -90,17 +92,17 @@ export default function Sidebar() {
             onClick={() => { openCompose(); if (sidebarOpen) toggleSidebar(); }}
             className="w-full flex items-center justify-center gap-2 rounded-2xl font-semibold text-sm transition-all"
             style={{
-              minHeight: '48px',
+              minHeight: '50px',
               background: 'var(--gradient-brand)',
               color: '#fff',
-              boxShadow: 'var(--shadow-accent)',
+              boxShadow: '0 16px 28px rgba(255,122,24,0.2)',
             }}
           >
             <Plus size={16} /> New Post
           </button>
         </div>
 
-        <nav className="flex flex-col gap-0.5 flex-1 px-3 overflow-y-auto">
+        <nav className="flex flex-col gap-1 flex-1 px-3 overflow-y-auto">
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
@@ -128,10 +130,12 @@ export default function Sidebar() {
         <div className="px-3 pb-5 space-y-2">
           {streak > 0 && (
             <div
-              className="rounded-2xl px-3 py-3 flex items-center gap-2.5"
+              className="rounded-[22px] px-3.5 py-3.5 flex items-center gap-3"
               style={{
-                background: 'color-mix(in srgb, var(--color-accent-bg) 75%, var(--color-surface) 25%)',
+                background:
+                  'linear-gradient(135deg, color-mix(in srgb, var(--color-accent-bg) 70%, white 30%), color-mix(in srgb, var(--color-surface) 84%, white 16%))',
                 border: '1px solid var(--color-border)',
+                boxShadow: '0 14px 28px rgba(2, 6, 23, 0.12)',
               }}
             >
               <span className="text-xl">🔥</span>
@@ -145,7 +149,7 @@ export default function Sidebar() {
           )}
 
           <div
-            className="glass-panel flex items-center gap-2.5 px-3 py-3 rounded-2xl"
+            className="glass-panel flex items-center gap-2.5 px-3 py-3 rounded-[22px]"
           >
             <img src={avatar} className="w-9 h-9 rounded-full" alt="" />
             <div className="flex-1 min-w-0">
