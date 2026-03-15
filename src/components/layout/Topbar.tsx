@@ -39,14 +39,14 @@ export default function Topbar() {
       className="fixed top-0 right-0 left-0 md:left-[220px] z-30"
       style={{
         height: 'var(--topbar-height)',
-        background: 'color-mix(in srgb, var(--color-bg) 72%, transparent)',
-        backdropFilter: 'blur(18px)',
-        WebkitBackdropFilter: 'blur(18px)',
+        background: 'color-mix(in srgb, var(--color-bg) 76%, transparent)',
+        backdropFilter: 'blur(22px)',
+        WebkitBackdropFilter: 'blur(22px)',
         borderBottom: '1px solid rgba(169, 190, 255, 0.08)',
-        boxShadow: '0 10px 28px rgba(2, 6, 23, 0.18)',
+        boxShadow: '0 12px 32px rgba(2, 6, 23, 0.14)',
       }}
     >
-      <div className="mx-auto flex h-full w-full max-w-[1180px] items-center justify-between gap-3 px-3 sm:px-5">
+      <div className="mx-auto flex h-full w-full max-w-[1240px] items-center justify-between gap-3 px-3 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={toggleSidebar}
@@ -55,8 +55,9 @@ export default function Topbar() {
               width: 'var(--tap-target)',
               height: 'var(--tap-target)',
               color: 'var(--color-text)',
-              background: 'rgba(255,255,255,0.04)',
+              background: 'rgba(255,255,255,0.05)',
               border: '1px solid var(--color-border)',
+              boxShadow: '0 10px 24px rgba(2, 6, 23, 0.08)',
             }}
             aria-label="Open menu"
           >
@@ -64,11 +65,11 @@ export default function Topbar() {
           </button>
 
           <div className="min-w-0">
-            <div className="hidden md:block text-[11px] font-semibold uppercase tracking-[0.24em]" style={{ color: 'var(--color-secondary)' }}>
+            <div className="hidden md:block text-[10px] font-semibold uppercase tracking-[0.26em]" style={{ color: 'var(--color-secondary)' }}>
               1% Better
             </div>
             <h1
-              className="truncate text-lg font-bold sm:text-xl"
+              className="truncate text-lg font-bold sm:text-[1.45rem]"
               style={{ fontFamily: "'Syne', sans-serif", color: 'var(--color-text)' }}
             >
               {pageTitle}
@@ -97,7 +98,7 @@ export default function Topbar() {
                 height: 'var(--tap-target)',
                 background: 'var(--gradient-brand)',
                 color: '#fff',
-                boxShadow: 'var(--shadow-accent)',
+                boxShadow: '0 14px 26px rgba(255,122,24,0.22)',
               }}
               aria-label="New post"
             >
@@ -112,8 +113,9 @@ export default function Topbar() {
               width: 'var(--tap-target)',
               height: 'var(--tap-target)',
               color: 'var(--color-text)',
-              background: location.pathname === '/chat' ? 'var(--color-accent-bg)' : 'rgba(255,255,255,0.04)',
+              background: location.pathname === '/chat' ? 'var(--color-accent-bg)' : 'rgba(255,255,255,0.05)',
               border: '1px solid var(--color-border)',
+              boxShadow: '0 10px 24px rgba(2, 6, 23, 0.08)',
             }}
             aria-label="Messages"
           >
@@ -127,8 +129,9 @@ export default function Topbar() {
               width: 'var(--tap-target)',
               height: 'var(--tap-target)',
               color: 'var(--color-text)',
-              background: location.pathname === '/notifications' ? 'var(--color-accent-bg)' : 'rgba(255,255,255,0.04)',
+              background: location.pathname === '/notifications' ? 'var(--color-accent-bg)' : 'rgba(255,255,255,0.05)',
               border: '1px solid var(--color-border)',
+              boxShadow: '0 10px 24px rgba(2, 6, 23, 0.08)',
             }}
             aria-label="Notifications"
           >
